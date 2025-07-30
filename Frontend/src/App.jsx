@@ -2,25 +2,45 @@ import AuthLayout from "./Layouts/AuthLayout"
 import AdminLayout from "./Layouts/AdminLayout"
 import ShopersLayout from "./Layouts/ShopersLayout"
 import { createBrowserRouter, RouterProvider } from "react-router-dom"
-import Login from "./Main Components/Auth/Login"
-import Register from "./Main Components/Auth/Register"
+import Login from "./Main Components/Shopers/Auth/Login"
+import Register from "./Main Components/Shopers/Auth/Register"
 import Home from "./Main Components/Shopers/Home"
 import Dashboard from "./Main Components/Admin/Dashboard"
 import { Provider } from "react-redux"
 import store from "./Redux/Store"
+import SellerAuthLayout from "./Layouts/SellerAuthLayout"
+import SellerRegister from "./Main Components/Seller/SellerAuth/SellerRegister"
+import SellerLogin from "./Main Components/Seller/SellerAuth/SellerLogin"
+import SellerDashboard from "./Main Components/Seller/SellerDashboard"
+import SellerLayout from "./Layouts/SellerLayout"
 
 const appRouter = createBrowserRouter([
   {
-    path: "/auth",
+    path: "/user",
     element: <AuthLayout></AuthLayout>,
     children: [
       {
-        path: "",
+        path: "login",
         element: <Login></Login>
       },
       {
         path: "register",
         element: <Register></Register>
+      }
+    ]
+  },
+
+  {
+    path: "/seller",
+    element: <SellerAuthLayout></SellerAuthLayout>,
+    children: [
+      {
+        path: "login",
+        element: <SellerRegister></SellerRegister>
+      },
+      {
+        path: "login",
+        element: <SellerLogin></SellerLogin>
       }
     ]
   },
@@ -37,7 +57,12 @@ const appRouter = createBrowserRouter([
   },
 
   {
-    path: "/home",
+    path: "/seller/home",
+    element: <SellerLayout></SellerLayout>
+  },
+
+  {
+    path: "/",
     element: <ShopersLayout></ShopersLayout>,
     children: [
       {
