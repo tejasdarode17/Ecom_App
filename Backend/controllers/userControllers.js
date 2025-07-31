@@ -8,16 +8,24 @@ export async function registerUser(req, res) {
     const { name, email, password } = req.body
 
     try {
+
+        if (!name || !email || !password) {
+            return res.status(400).json({
+                success: false,
+                message: "Something is missing"
+            })
+        }
+
         const existingUser = await User.findOne({ email })
 
         if (existingUser) {
-            res.status(400).json({
+            return res.status(400).json({
                 success: false,
                 message: "This email is already registred with another account please try with diffrent email"
             })
         }
 
-        const hashPassword = bcrypt.hash(password, 10)
+        const hashPassword = await bcrypt.hash(password, 10)
 
         const newUser = await User.create({
             username: name,
@@ -25,17 +33,17 @@ export async function registerUser(req, res) {
             password: hashPassword
         })
 
-        const accessToken = genrateToken({ id: newUser._id, role: newUser.role, email: newUser.email })
+        const accessToken = await genrateToken({ id: newUser._id, role: newUser.role, email: newUser.email })
 
         res.cookie("accessToken", accessToken, {
             httpOnly: true,
             secure: false
         })
 
-        res.status(200).json({
+        return res.status(200).json({
             success: true,
             message: "User Logged in Success",
-            user: existingUser
+            user: newUser
         })
 
     } catch (error) {

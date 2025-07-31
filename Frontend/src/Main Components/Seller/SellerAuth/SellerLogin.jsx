@@ -1,8 +1,17 @@
 import { Link } from "react-router-dom";
 
 const SellerLogin = () => {
+
+
+    
+
+
+
+
+
+
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-100">
+        <div className="min-h-screen flex items-center justify-center">
             <div className="bg-white shadow-lg rounded px-8 py-6 w-full max-w-md">
                 <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">Seller Login</h2>
 
@@ -35,7 +44,7 @@ const SellerLogin = () => {
 
                 <p className="text-center text-sm text-gray-600 mt-4">
                     Don't have a seller account?{" "}
-                    <Link to="/seller" className="text-green-600 hover:underline">
+                    <Link to="/seller/register" className="text-green-600 hover:underline">
                         Register here
                     </Link>
                 </p>

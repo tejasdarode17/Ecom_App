@@ -15,7 +15,7 @@ function Navbar() {
         <div className="flex space-x-6 text-gray-700 font-medium">
           <Link to="/home" className="hover:text-indigo-600">Home</Link>
           <Link to="/products" className="hover:text-indigo-600">Products</Link>
-          <Link to="/auth" className="hover:text-indigo-600">Login</Link>
+          <Link to="/user/login" className="hover:text-indigo-600">Login</Link>
 
           {/* Cart */}
           <Link to="/cart" className="relative flex items-center hover:text-indigo-600">

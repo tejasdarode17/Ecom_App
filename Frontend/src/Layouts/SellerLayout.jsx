@@ -4,7 +4,7 @@ import { Outlet } from 'react-router-dom'
 
 const SellerLayout = () => {
     return (
-        <div>
+        <div className='flex'>
             <div>
                 <SellerSidebar></SellerSidebar>
             </div>

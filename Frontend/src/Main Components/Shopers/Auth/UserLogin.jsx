@@ -8,8 +8,10 @@ const Login = () => {
     password: "",
   })
 
+  //login karna hai 
+  //registration ho gaya hai seller ka aur userr ka 
+  //logim karna hai aur route protected karna hai 
 
-  
 
   return (
     <div className="bg-white shadow-md rounded px-8 py-6">
@@ -44,7 +46,7 @@ const Login = () => {
 
       <p className="text-center text-sm text-gray-600 mt-4">
         Don't have an account?{" "}
-        <Link to="register" className="text-blue-600 hover:underline">
+        <Link to="/user/register" className="text-blue-600 hover:underline">
           Sign up
         </Link>
       </p>

@@ -10,7 +10,7 @@ const SellerSidebar = () => {
 
             <nav className="flex-1 px-4 py-6 space-y-4">
                 <NavLink
-                    to="/seller/dashboard"
+                    to="/seller/home/dashboard"
                     className={({ isActive }) =>
                         `flex items-center gap-3 px-4 py-2 rounded hover:bg-gray-800 ${isActive ? "bg-gray-800" : ""
                         }`
