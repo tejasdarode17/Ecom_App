@@ -1,7 +1,30 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { FaBoxOpen, FaChartLine, FaClipboardList, FaCog } from "react-icons/fa";
+import { Button } from "@/components/ui/button";
+import axios from "axios";
+import { toast } from "sonner";
+import { clearUser } from "@/Redux/authSlice";
+import { useDispatch } from "react-redux";
 
 const SellerSidebar = () => {
+
+    const dispatch = useDispatch()
+    const navigate = useNavigate()
+
+    async function handleLogout() {
+        try {
+            const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/user/logout`, {}, {
+                withCredentials: true
+            })
+            const data = response.data
+            dispatch(clearUser())
+            navigate("/seller/auth/login")
+        } catch (error) {
+            console.log(error);
+            toast.error(error?.response?.data?.message)
+        }
+    }
+
     return (
         <div className="w-64 h-screen bg-gray-900 text-white flex flex-col">
             <div className="px-6 py-4 text-2xl font-bold border-b border-gray-700">
@@ -48,6 +71,8 @@ const SellerSidebar = () => {
                 >
                     <FaCog /> Settings
                 </NavLink>
+
+                <Button onClick={handleLogout} variant="destructive" className={`w-full flex items-center gap-3 px-4 py-2 rounded`}>Logout</Button>
             </nav>
         </div>
     );

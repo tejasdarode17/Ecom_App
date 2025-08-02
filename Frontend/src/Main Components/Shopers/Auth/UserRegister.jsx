@@ -19,6 +19,9 @@ const Register = () => {
     try {
       e.preventDefault()
 
+      userInput.email.toLowerCase()
+
+
       if (!userInput.name || !userInput.email || !userInput.password) {
         toast("Something went wrong", {
           description: "Check your input",
@@ -26,7 +29,7 @@ const Register = () => {
         })
       }
 
-      const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/auth/user/register`, userInput, {
+      const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/user/register`, userInput, {
         withCredentials: true
       })
       const data = response.data
@@ -36,20 +39,6 @@ const Register = () => {
       console.log(error);
     }
   }
-
-
-  useEffect(() => {
-    if (isAuthenticated) {
-      if (userData.role === "user") {
-        navigate("/")
-      }
-
-      if (userData.role === "seller") {
-        navigate("/seller/home")
-      }
-    }
-
-  }, [navigate, isAuthenticated, userData])
 
 
 
@@ -108,7 +97,7 @@ const Register = () => {
 
       <p className="text-center text-sm text-gray-600 mt-4">
         Already have an account?{" "}
-        <Link to="/user/login" className="text-blue-600 hover:underline">
+        <Link to="/user/auth/login" className="text-blue-600 hover:underline">
           Login
         </Link>
       </p>
@@ -117,7 +106,7 @@ const Register = () => {
       <div className="mt-4 text-center">
         <p className="text-sm text-gray-600 mb-2">Want to sell on our platform?</p>
         <Link
-          to="/seller/register"
+          to="/seller/auth/register"
           className="inline-block bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded"
         >
           Register as Seller

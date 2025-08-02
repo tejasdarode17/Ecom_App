@@ -33,11 +33,13 @@ export async function registerUser(req, res) {
             password: hashPassword
         })
 
-        const accessToken = await genrateToken({ id: newUser._id, role: newUser.role, email: newUser.email })
+        const accessToken = genrateToken({ id: newUser._id, role: newUser.role, email: newUser.email })
 
         res.cookie("accessToken", accessToken, {
             httpOnly: true,
-            secure: false
+            secure: false,
+            sameSite: "Lax",
+            path: "/"
         })
 
         return res.status(200).json({
@@ -64,16 +66,23 @@ export async function loginUser(req, res) {
 
     try {
 
+        if (!email || !password) {
+            return res.status(400).json({
+                success: false,
+                message: "All the feilds are mandatory"
+            })
+        }
+
         const user = await User.findOne({ email })
 
         if (!user) {
-            res.status(400).json({
+            return res.status(400).json({
                 success: false,
                 message: "User not exist with this email"
             })
         }
 
-        const matchPassword = await bcrypt.compare(password, matchPassword)
+        const matchPassword = await bcrypt.compare(password, user.password)
 
         if (!matchPassword) {
             return res.status(401).json({
@@ -86,10 +95,12 @@ export async function loginUser(req, res) {
 
         res.cookie("accessToken", accessToken, {
             httpOnly: true,
-            secure: false
+            secure: false,
+            sameSite: "Lax",
+            path: "/"
         })
 
-        res.status(200).json({
+        return res.status(200).json({
             success: true,
             message: "User Logged in Success",
             user: user
@@ -105,4 +116,13 @@ export async function loginUser(req, res) {
     }
 }
 
+export async function userlogout(req, res) {
+    res.clearCookie("accessToken", {
+        httpOnly: true,
+        secure: false,
+        sameSite: "Lax",
+        path: "/"
+    });
+    return res.status(200).json({ success: false, message: "Logged out successfully" });
+}
 

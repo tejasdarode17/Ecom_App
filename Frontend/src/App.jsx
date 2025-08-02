@@ -6,18 +6,27 @@ import Login from "./Main Components/Shopers/Auth/UserLogin"
 import Register from "./Main Components/Shopers/Auth/UserRegister"
 import Home from "./Main Components/Shopers/Home"
 import Dashboard from "./Main Components/Admin/AdminDashboard"
-import { Provider } from "react-redux"
-import store from "./Redux/Store"
+import { useDispatch } from "react-redux"
 import SellerAuthLayout from "./Layouts/SellerAuthLayout"
 import SellerRegister from "./Main Components/Seller/SellerAuth/SellerRegister"
 import SellerLogin from "./Main Components/Seller/SellerAuth/SellerLogin"
 import SellerDashboard from "./Main Components/Seller/SellerDashboard"
 import SellerLayout from "./Layouts/SellerLayout"
+import ProtectedRoutes from "./Main Components/ProtectedRoutes"
+import axios from "axios"
+import { useEffect, useState } from "react"
+import { setUser } from "./Redux/authSlice"
+import ErrorPage from "./Main Components/ErrorPage"
+
 
 const appRouter = createBrowserRouter([
   {
-    path: "/user",
-    element: <AuthLayout></AuthLayout>,
+    path: "/user/auth",
+    element: (
+      <ProtectedRoutes>
+        <AuthLayout></AuthLayout>
+      </ProtectedRoutes>
+    ),
     children: [
       {
         path: "login",
@@ -31,8 +40,12 @@ const appRouter = createBrowserRouter([
   },
 
   {
-    path: "/seller",
-    element: <SellerAuthLayout></SellerAuthLayout>,
+    path: "/seller/auth",
+    element: (
+      <ProtectedRoutes>
+        <SellerAuthLayout></SellerAuthLayout>
+      </ProtectedRoutes>
+    ),
     children: [
       {
         path: "register",
@@ -41,6 +54,36 @@ const appRouter = createBrowserRouter([
       {
         path: "login",
         element: <SellerLogin></SellerLogin>
+      }
+    ]
+  },
+
+  {
+    path: "/",
+    element: (
+      <ProtectedRoutes>
+        <ShopersLayout></ShopersLayout>
+      </ProtectedRoutes>
+    ),
+    children: [
+      {
+        index: true,
+        element: <Home></Home>
+      }
+    ]
+  },
+
+  {
+    path: "/seller",
+    element: (
+      <ProtectedRoutes>
+        <SellerLayout></SellerLayout>
+      </ProtectedRoutes>
+    ),
+    children: [
+      {
+        index: true,
+        element: <SellerDashboard></SellerDashboard>
       }
     ]
   },
@@ -57,35 +100,44 @@ const appRouter = createBrowserRouter([
   },
 
   {
-    path: "/seller/home",
-    element: <SellerLayout></SellerLayout>,
-    children: [
-      {
-        path: "dashboard",
-        element: <SellerDashboard></SellerDashboard>
-      }
-    ]
-  },
-
-  {
-    path: "/",
-    element: <ShopersLayout></ShopersLayout>,
-    children: [
-      {
-        path: "",
-        element: <Home></Home>
-      }
-    ]
+    path: "*",
+    element: <ErrorPage />
   }
 ])
 
 
+
 function App() {
+
+  const dispatch = useDispatch();
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        setLoading(true)
+
+        const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/user/check-auth`, {
+          withCredentials: true,
+        });
+
+        dispatch(setUser(res.data.user));
+        console.log(res.data);
+      } catch (error) {
+        console.log(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkAuth();
+  }, [dispatch]);
+
+  if (loading) return <div>Loading...</div>;
+
   return (
     <>
-      <Provider store={store}>
-        <RouterProvider router={appRouter}></RouterProvider>
-      </Provider>
+      <RouterProvider router={appRouter}></RouterProvider>
     </>
   )
 }

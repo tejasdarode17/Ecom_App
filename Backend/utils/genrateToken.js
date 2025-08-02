@@ -3,22 +3,20 @@ import dotenv from "dotenv"
 dotenv.config()
 
 
+export function genrateToken(payload) {
 
-export async function genrateToken(payload) {
-
-    return await JWT.sign(payload, process.env.JWT_SECRET_KEY, {
+    return JWT.sign(payload, process.env.JWT_SECRET_KEY, {
         expiresIn: "30m"
     })
 
 }
 
-export async function verifyToken(payload) {
+export function verifyToken(payload) {
     try {
-        let data = await JWT.verify(payload, process.env.JWT_SECRET_KEY)
+        let data = JWT.verify(payload, process.env.JWT_SECRET_KEY)
         return data
     } catch (error) {
         console.log(error);
     }
 }
-
 

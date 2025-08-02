@@ -1,7 +1,25 @@
 import { Link } from "react-router-dom";
 import { ShoppingCart } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import axios from "axios";
 
 function Navbar() {
+
+  async function handleLogout() {
+    try {
+
+      const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/user/logout`, {}, {
+        withCredentials: true
+      })
+      const data = response.data
+      console.log(data);
+    } catch (error) {
+      console.log(error);
+      toast.error(error?.response?.data?.message)
+    }
+  }
+
 
   return (
     <nav className="bg-white shadow sticky top-0 z-50">
@@ -15,12 +33,13 @@ function Navbar() {
         <div className="flex space-x-6 text-gray-700 font-medium">
           <Link to="/home" className="hover:text-indigo-600">Home</Link>
           <Link to="/products" className="hover:text-indigo-600">Products</Link>
-          <Link to="/user/login" className="hover:text-indigo-600">Login</Link>
+          <Link to="/user/auth/login" className="hover:text-indigo-600">Login</Link>
 
           {/* Cart */}
           <Link to="/cart" className="relative flex items-center hover:text-indigo-600">
             <ShoppingCart size={22} />
           </Link>
+          <Button variant="ghost" onClick={handleLogout}>Logout</Button>
         </div>
       </div>
     </nav>

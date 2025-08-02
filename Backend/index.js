@@ -5,6 +5,7 @@ import cookieParser from "cookie-parser";
 import dbConnect from "./config/dbconnect.js";
 import userRouter from "./routes/userRoutes.js"
 import sellerRouter from "./routes/sellerRoutes.js"
+import authRouter from "./routes/authRoute.js"
 
 
 dotenv.config();
@@ -34,8 +35,9 @@ app.use(express.urlencoded({ extended: true }));
 
 
 
-app.use("/api/auth", userRouter)
-app.use("/api/seller", sellerRouter)
+app.use("/api/v1", authRouter)
+app.use("/api/v1", userRouter)
+app.use("/api/v1", sellerRouter)
 
 app.listen(PORT, () => {
     console.log(`🚀 Server running at http://localhost:${PORT}`);

@@ -1,10 +1,9 @@
 import express from "express"
-import { registerSeller } from "../controllers/sellerControllers.js"
-
+import { loginSeller, registerSeller } from "../controllers/sellerControllers.js"
 
 const route = express.Router()
 
-route.post("/register", registerSeller)
-
+route.post("/seller/register", registerSeller)
+route.post("/seller/login", loginSeller)
 
 export default route

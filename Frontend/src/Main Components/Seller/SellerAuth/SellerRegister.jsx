@@ -20,6 +20,7 @@ const SellerRegister = () => {
         try {
 
             e.preventDefault()
+            userInput.email.toLowerCase()
 
             if (!sellerInput.name || !sellerInput.email || !sellerInput.password || !sellerInput.address) {
                 toast.error("Please fill all the feilds")
@@ -39,18 +40,7 @@ const SellerRegister = () => {
         }
     }
 
-    useEffect(() => {
-        if (isAuthenticated) {
-            if (userData.role === "user") {
-                navigate("/")
-            }
 
-            if (userData.role === "seller") {
-                navigate("/seller/home")
-            }
-        }
-
-    }, [navigate, isAuthenticated, userData])
 
 
     return (
@@ -133,7 +123,7 @@ const SellerRegister = () => {
 
             <p className="text-center text-sm text-gray-600 mt-4">
                 Already a seller?{" "}
-                <Link to="/seller/login" className="text-green-600 hover:underline">
+                <Link to="/seller/auth/login" className="text-green-600 hover:underline">
                     Login here
                 </Link>
             </p>
