@@ -17,6 +17,7 @@ import axios from "axios"
 import { useEffect, useState } from "react"
 import { setUser } from "./Redux/authSlice"
 import ErrorPage from "./Main Components/ErrorPage"
+import Products from "./Main Components/Seller/Products"
 
 
 const appRouter = createBrowserRouter([
@@ -84,6 +85,10 @@ const appRouter = createBrowserRouter([
       {
         index: true,
         element: <SellerDashboard></SellerDashboard>
+      },
+      {
+        path: "products",
+        element: <Products></Products>
       }
     ]
   },
@@ -108,6 +113,7 @@ const appRouter = createBrowserRouter([
 
 
 function App() {
+
 
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);

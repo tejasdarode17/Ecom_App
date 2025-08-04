@@ -3,17 +3,20 @@ import { ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import axios from "axios";
+import { useDispatch } from "react-redux";
+import { clearUser } from "@/Redux/authSlice";
 
 function Navbar() {
 
+  const dispatch = useDispatch()
+
+
   async function handleLogout() {
     try {
-
       const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/user/logout`, {}, {
         withCredentials: true
       })
-      const data = response.data
-      console.log(data);
+      dispatch(clearUser())
     } catch (error) {
       console.log(error);
       toast.error(error?.response?.data?.message)

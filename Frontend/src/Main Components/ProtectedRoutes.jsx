@@ -11,10 +11,10 @@ const ProtectedRoutes = ({ children }) => {
 
 
     //Seller is not authenticated  || login and tries to access seller pages (except login/register)
-    if (userData.role == "seller" && !isAuthenticated && !(path.startsWith("/seller/auth/login") || path.startsWith("/seller/auth/register"))
+    if (!isAuthenticated && !(path.startsWith("/seller/auth/login") || path.startsWith("/seller/auth/register"))
     ) return <Navigate to="/seller/auth/login" replace />;
 
-    
+
     // Seller is already authenticated || login but tries to access login/register again
     if (isAuthenticated && userData.role === "seller" && (path.startsWith("/seller/auth/login") || path.startsWith("/seller/auth/register"))
     ) return <Navigate to="/seller" replace />;

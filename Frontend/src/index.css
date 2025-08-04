@@ -118,3 +118,11 @@
     @apply bg-background text-foreground;
   }
 }
+
+.pointer {
+  cursor: pointer;
+}
+
+Button {
+  cursor: pointer;
+}
