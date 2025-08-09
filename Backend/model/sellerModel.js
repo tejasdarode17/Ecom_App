@@ -30,6 +30,15 @@ const sellerSchema = new mongoose.Schema({
         default: 'seller'
     },
 
+
+    products: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Product",
+            required: true
+        }
+    ]
+
 })
 
 

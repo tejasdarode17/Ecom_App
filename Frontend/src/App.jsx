@@ -12,12 +12,14 @@ import SellerRegister from "./Main Components/Seller/SellerAuth/SellerRegister"
 import SellerLogin from "./Main Components/Seller/SellerAuth/SellerLogin"
 import SellerDashboard from "./Main Components/Seller/SellerDashboard"
 import SellerLayout from "./Layouts/SellerLayout"
-import ProtectedRoutes from "./Main Components/ProtectedRoutes"
+import ProtectedRoutes from "./Redux/ProtectedRoutes"
 import axios from "axios"
 import { useEffect, useState } from "react"
 import { setUser } from "./Redux/authSlice"
 import ErrorPage from "./Main Components/ErrorPage"
-import Products from "./Main Components/Seller/Products"
+import Products from "./Main Components/Seller/SellerProducts/Products"
+import { AddNewProduct } from "./Main Components/Seller/SellerProducts/AddNewProduct"
+import EditProduct from "./Main Components/Seller/SellerProducts/EditProduct"
 
 
 const appRouter = createBrowserRouter([
@@ -88,7 +90,15 @@ const appRouter = createBrowserRouter([
       },
       {
         path: "products",
-        element: <Products></Products>
+        element: <Products></Products>,
+      },
+      {
+        path: "add-product",
+        element: <AddNewProduct></AddNewProduct>
+      },
+      {
+        path: "edit-product",
+        element: <EditProduct></EditProduct>
       }
     ]
   },
@@ -111,9 +121,7 @@ const appRouter = createBrowserRouter([
 ])
 
 
-
 function App() {
-
 
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);

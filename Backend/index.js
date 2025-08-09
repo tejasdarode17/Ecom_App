@@ -3,15 +3,16 @@ import dotenv from "dotenv";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import dbConnect from "./config/dbconnect.js";
-import userRouter from "./routes/userRoutes.js"
 import sellerRouter from "./routes/sellerRoutes.js"
-import authRouter from "./routes/authRoute.js"
-
+import authRouter from "./routes/Auth Routes/authRoutes.js"
+import imageRouter from "./routes/imageRoutes.js"
+import cloudinaryConfig from "./config/cloudinary.js";
 
 dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 dbConnect();
+cloudinaryConfig()
 
 app.use(
     cors({
@@ -33,11 +34,11 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 
-
-
 app.use("/api/v1", authRouter)
-app.use("/api/v1", userRouter)
+app.use("/api/v1", imageRouter)
 app.use("/api/v1", sellerRouter)
+
+
 
 app.listen(PORT, () => {
     console.log(`🚀 Server running at http://localhost:${PORT}`);

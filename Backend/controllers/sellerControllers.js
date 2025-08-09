@@ -1,51 +1,92 @@
 import Seller from "../model/sellerModel.js";
-import bcrypt from "bcrypt"
-import { genrateToken } from "../utils/genrateToken.js";
+import Product from "../model/productModel.js";
 
-export async function registerSeller(req, res) {
+
+
+
+export async function addProduct(req, res) {
+
+    const { name, category, image, brand, description, stock, price, salePrice } = req.body
+
+    const sellerID = req.user.id
 
     try {
-        const { name, email, address, password } = req.body
 
-        if (!name || !email || !address || !password) {
+        if (!name || !category || !brand || !description || !stock || !price) {
             return res.status(400).json({
                 success: false,
-                message: "All the feilds are required"
+                message: "Something is missing"
             })
         }
 
-        const existingSeller = await Seller.findOne({ email })
+        if (!image || !image.url || !image.public_id) {
+            return res.status(400).json({ message: "Image data is missing" });
+        }
 
-        if (existingSeller) {
+        const seller = await Seller.findOne({ _id: sellerID })
+        console.log(seller);
+
+        if (!seller || !seller.role == "seller") {
             return res.status(400).json({
                 success: false,
-                message: "this email is already taken by another seller please use diffrent email"
+                message: "You are not authorized or you are not seller "
             })
         }
 
-        const hashPassword = await bcrypt.hash(password, 10)
-
-        const newSeller = await Seller.create({
-            username: name,
-            email: email,
-            businessAddress: address,
-            password: hashPassword
+        const newProduct = new Product({
+            name,
+            category,
+            image,
+            brand,
+            description,
+            stock,
+            price,
+            salePrice,
+            seller: sellerID
         })
 
-        const accessToken = genrateToken({ id: newSeller._id, role: newSeller.role, email: newSeller.email })
+        await newProduct.save()
 
-        res.cookie("accessToken", accessToken, {
-            httpOnly: true,
-            secure: false,
-            sameSite: "Lax",
-            path: "/"
+        return res.status(200).json({
+            success: true,
+            message: "product added succesfully",
+            product: newProduct
         })
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            success: false,
+            message: "Server error",
+            error: error.message,
+        })
+    }
+}
+
+
+
+
+export async function getAllSellerProducts(req, res) {
+
+    try {
+        const sellerId = req.user.id
+
+        const seller = await Seller.findOne({ _id: sellerId })
+
+        if (!seller || !seller.role == "seller") {
+            return res.status(400).json({
+                success: false,
+                message: "You are not authorized or you are not seller "
+            })
+        }
+
+        const products = await Product.find({ seller: sellerId }).populate("seller", "username email");
 
 
         return res.status(200).json({
             success: true,
-            message: "Seller Registred Successfully",
-            user: newSeller
+            message: "product fetched succesfully",
+            products: products
         })
 
 
@@ -55,65 +96,6 @@ export async function registerSeller(req, res) {
             success: false,
             message: "Server error",
             error: error.message,
-        });
+        })
     }
 }
-
-
-export async function loginSeller(req, res) {
-
-    try {
-        const { email, password } = req.body
-
-        if (!email || !password) {
-            return res.status(400).json({
-                success: false,
-                message: "All the feilds are required"
-            })
-        }
-
-        const seller = await Seller.findOne({ email })
-
-        if (!seller) {
-            return res.status(400).json({
-                success: false,
-                message: "seller does not exist with this email"
-            })
-        }
-
-        const matchPassword = await bcrypt.compare(password, seller.password)
-        if (!matchPassword) {
-            return res.status(401).json({
-                success: false,
-                message: "Invalid email or password",
-            });
-        }
-
-
-        const accessToken = genrateToken({ id: seller._id, role: seller.role, email: seller.email })
-
-        res.cookie("accessToken", accessToken, {
-            httpOnly: true,
-            secure: false,
-            sameSite: "Lax",
-            path: "/"
-        })
-
-        return res.status(200).json({
-            success: true,
-            message: "Seller loggedin Successfully",
-            user: seller
-        })
-
-
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({
-            success: false,
-            message: "Server error",
-            error: error.message,
-        });
-    }
-
-}
-

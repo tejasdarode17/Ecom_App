@@ -5,7 +5,7 @@ import axios from "axios";
 import { toast } from "sonner";
 import { clearUser } from "@/Redux/authSlice";
 import { useDispatch } from "react-redux";
-import { ChartNoAxesCombined, LayoutDashboard, Menu, Settings } from "lucide-react";
+import { ChartNoAxesCombined, LayoutDashboard, LogOut, Menu, Settings } from "lucide-react";
 import { useState } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 
@@ -13,110 +13,97 @@ const SellerSidebar = () => {
 
     const [openSheet, setOpenSheet] = useState(false)
     const navigate = useNavigate()
-    
+
     return (
-        <div>
-            <div className="hidden lg:flex flex-col w-64 h-screen bg-gray-900 text-white">
-                <div onClick={() => navigate("/seller")} className="flex gap-2 pointer items-center px-6 py-4 text-2xl font-bold border-b border-gray-700">
-                    <ChartNoAxesCombined />
-                    Admin Panel
+        <>
+            {/* Desktop Sidebar */}
+            <div className="hidden lg:flex flex-col w-64 min-h-screen bg-white text-gray-800 border-r border-gray-200 shadow-none">
+                <div
+                    onClick={() => navigate("/seller")}
+                    className="flex gap-2 items-center px-6 py-5 text-xl font-semibold border-b border-gray-100 cursor-pointer"
+                >
+                    <ChartNoAxesCombined className="text-blue-600" />
+                    Seller Panel
                 </div>
-                <SideBarMenu></SideBarMenu>
+                <SideBarMenu />
             </div>
 
+            {/* Mobile Sidebar (optional if used here) */}
             <div className="lg:hidden">
                 <Sheet open={openSheet} onOpenChange={setOpenSheet}>
                     <SheetTrigger asChild>
                         <Menu onClick={() => setOpenSheet(true)} />
                     </SheetTrigger>
-                    <SheetContent side="left" className="w-50">
+                    <SheetContent side="left" className="w-64">
                         <SheetHeader>
-                            <SheetTitle onClick={() => navigate("/seller")} className='flex gap-2 items-center pointer mt-2'>
+                            <SheetTitle
+                                onClick={() => navigate("/seller")}
+                                className="flex gap-2 items-center mt-2"
+                            >
                                 <ChartNoAxesCombined />
-                                Admin Pannel
+                                Seller Panel
                             </SheetTitle>
                         </SheetHeader>
-                        <SideBarMenu setOpenSheet={setOpenSheet}></SideBarMenu>
+                        <SideBarMenu setOpenSheet={setOpenSheet} />
                     </SheetContent>
                 </Sheet>
             </div>
-        </div >
+        </>
     );
 };
 
-
 const SideBarMenu = ({ setOpenSheet }) => {
-
-    const navigate = useNavigate()
-    const dispatch = useDispatch()
-    const location = useLocation()
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
+    const location = useLocation();
 
     async function handleLogout() {
         try {
-            const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/user/logout`, {}, {
-                withCredentials: true
-            })
-            const data = response.data
-            dispatch(clearUser())
-            navigate("/seller/auth/login")
+            await axios.post(`${import.meta.env.VITE_BACKEND_URL}/user/logout`, {}, { withCredentials: true });
+            dispatch(clearUser());
+            navigate("/seller/auth/login");
         } catch (error) {
             console.log(error);
-            toast.error(error?.response?.data?.message)
+            toast.error(error?.response?.data?.message);
         }
     }
 
     const items = [
-        {
-            id: 1,
-            name: "Dashboard",
-            icon: <LayoutDashboard />,
-            path: "/seller"
-        },
-        {
-            id: 2,
-            name: "Products",
-            icon: <FaBoxOpen></FaBoxOpen>,
-            path: "/seller/products"
-        },
-        {
-            id: 3,
-            name: "Orders",
-            icon: <FaClipboardList></FaClipboardList>,
-            path: "/seller/orders"
-        },
-        {
-            id: 4,
-            name: "Settings",
-            icon: <Settings></Settings>,
-            path: "/seller/settings"
-        },
-    ]
+        { id: 1, name: "Dashboard", icon: <LayoutDashboard />, path: "/seller" },
+        { id: 2, name: "Products", icon: <FaBoxOpen />, path: "/seller/products" },
+        { id: 3, name: "Orders", icon: <FaClipboardList />, path: "/seller/orders" },
+        { id: 4, name: "Settings", icon: <Settings />, path: "/seller/settings" },
+    ];
 
     return (
-        <>
-            {
-                items.map((item) => (
+        <div className="flex flex-col gap-1 px-2 py-4">
+            {items.map((item) => (
+                <Button
+                    key={item.id}
+                    onClick={() => {
+                        navigate(item.path);
+                        if (setOpenSheet) setOpenSheet(false);
+                    }}
+                    variant="ghost"
+                    className={`flex items-center gap-3 w-full justify-start px-4 py-2 rounded-md text-sm font-medium transition-colors
+                                ${location.pathname === item.path ? "bg-blue-100 text-blue-700 hover:bg-blue-100" : "hover:bg-gray-100 text-gray-700"}`}
+                >
+                    {item.icon}
+                    {item.name}
+                </Button>
+            ))}
 
-                    <div className="flex w-full text-left lg:px-2 lg:py-2" key={item.id}>
-                        <Button
-                            onClick={() => {
-                                navigate(item.path);
-                                if (setOpenSheet) setOpenSheet(false)
-                            }}
-                            variant="ghost"
-                            className={`w-full hover:bg-gray-500 ${location.pathname == item.path ? "bg-gray-500" : ""}`}>
-                            {item.icon}
-                            {item.name}
-                        </Button>
-                    </div >
-
-                ))
-            }
-            <Button onClick={handleLogout} variant="ghost" className="bg-red-500 hover:bg-orange-600  lg:px-2 lg:py-2">
+            <Button
+                onClick={handleLogout}
+                variant="ghost"
+                className="flex items-center gap-3 w-full justify-start px-4 py-2 rounded-md text-sm font-medium text-red-500 hover:bg-red-50"
+            >
+                <LogOut />
                 Logout
             </Button>
-        </>
-    )
-}
+        </div>
+    );
+};
+
 
 export default SellerSidebar;
