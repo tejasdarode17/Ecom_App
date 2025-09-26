@@ -7,7 +7,8 @@ const productSchema = new mongoose.Schema({
     },
 
     category: {
-        type: String,
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Category",
         required: true,
     },
 
@@ -49,6 +50,10 @@ const productSchema = new mongoose.Schema({
         default: ""
     },
 
+    active: {
+        type: Boolean,
+        default: true
+    },
 
     seller: {
         type: mongoose.Schema.Types.ObjectId,

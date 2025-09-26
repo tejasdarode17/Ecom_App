@@ -20,7 +20,7 @@ route.post("/seller/login", loginSeller)
 
 //common routes 
 route.post("/user/logout", logout)
-route.get("/user/check-auth", verifyUser, checkAuth) //auto login and sending the userdata insted of storing it in local storage 
+route.get("/user/check-auth", verifyUser, checkAuth)
 
 export default route
 

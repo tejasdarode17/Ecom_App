@@ -2,6 +2,7 @@ import User from "../../model/userModel.js";
 import Seller from "../../model/sellerModel.js";
 import bcrypt from "bcrypt"
 import { genrateToken } from "../../utils/genrateToken.js";
+import Admin from "../../model/adminModel.js";
 
 
 //user (shopper)
@@ -74,7 +75,7 @@ export async function loginUser(req, res) {
             })
         }
 
-        const user = await User.findOne({ email })
+        const user = await User.findOne({ email }) || await Admin.findOne({ email })
 
         if (!user) {
             return res.status(400).json({
@@ -232,7 +233,6 @@ export async function loginSeller(req, res) {
     }
 
 }
-
 
 
 

@@ -25,6 +25,13 @@ const userSchema = new mongoose.Schema({
         default: 'user'
     },
 
+    orders: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Product",
+        }
+    ]
+    
 })
 
 

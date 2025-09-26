@@ -6,6 +6,7 @@ import dbConnect from "./config/dbconnect.js";
 import sellerRouter from "./routes/sellerRoutes.js"
 import authRouter from "./routes/Auth Routes/authRoutes.js"
 import imageRouter from "./routes/imageRoutes.js"
+import adminRouter from "./routes/adminRoutes.js"
 import cloudinaryConfig from "./config/cloudinary.js";
 
 dotenv.config();
@@ -37,6 +38,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/api/v1", authRouter)
 app.use("/api/v1", imageRouter)
 app.use("/api/v1", sellerRouter)
+app.use("/api/v1", adminRouter)
 
 
 

@@ -2,24 +2,32 @@ import AuthLayout from "./Layouts/AuthLayout"
 import AdminLayout from "./Layouts/AdminLayout"
 import ShopersLayout from "./Layouts/ShopersLayout"
 import { createBrowserRouter, RouterProvider } from "react-router-dom"
-import Login from "./Main Components/Shopers/Auth/UserLogin"
-import Register from "./Main Components/Shopers/Auth/UserRegister"
+import Login from "./Main Components/Shopers/Shoper Auth/UserLogin"
+import Register from "./Main Components/Shopers/Shoper Auth/UserRegister"
 import Home from "./Main Components/Shopers/Home"
-import Dashboard from "./Main Components/Admin/AdminDashboard"
-import { useDispatch } from "react-redux"
+import { useDispatch, useSelector } from "react-redux"
 import SellerAuthLayout from "./Layouts/SellerAuthLayout"
-import SellerRegister from "./Main Components/Seller/SellerAuth/SellerRegister"
-import SellerLogin from "./Main Components/Seller/SellerAuth/SellerLogin"
-import SellerDashboard from "./Main Components/Seller/SellerDashboard"
+import SellerRegister from "./Main Components/Seller/Seller Auth/SellerRegister"
+import SellerLogin from "./Main Components/Seller/Seller Auth/SellerLogin"
+import SellerDashboard from "./Main Components/Seller/Seller Dashboard/SellerDashboard"
 import SellerLayout from "./Layouts/SellerLayout"
-import ProtectedRoutes from "./Redux/ProtectedRoutes"
-import axios from "axios"
-import { useEffect, useState } from "react"
-import { setUser } from "./Redux/authSlice"
-import ErrorPage from "./Main Components/ErrorPage"
-import Products from "./Main Components/Seller/SellerProducts/Products"
-import { AddNewProduct } from "./Main Components/Seller/SellerProducts/AddNewProduct"
-import EditProduct from "./Main Components/Seller/SellerProducts/EditProduct"
+import ProtectedRoutes from "./Main Components/Other/ProtectedRoutes"
+import { useEffect } from "react"
+import { checkAuth, } from "./Redux/authSlice"
+import ErrorPage from "./Main Components/Other/ErrorPage"
+import { AddNewProduct } from "./Main Components/Seller/Seller Products/AddNewProduct"
+import EditProduct from "./Main Components/Seller/Seller Products/EditProduct"
+import SellerProducts from "./Main Components/Seller/Seller Products/SellerProducts"
+import SellerSingleProduct from "./Main Components/Seller/Seller Products/SellerSingleProduct"
+import AdminDashboard from "./Main Components/Admin/AdminDashboard"
+import AdminCategory from "./Main Components/Admin/Admin Categories/AdminCategory"
+import { fetchAllCategories } from "./Redux/categoriesSlice"
+import AdminSellers from "./Main Components/Admin/Manage Sellers/AdminSeller"
+import SelectedSeller from "./Main Components/Admin/Manage Sellers/SelectedSeller"
+import AdminProductDetail from "./Main Components/Admin/AdminProductDetail"
+import PendingSeller from "./Main Components/Admin/Manage Sellers/PendingSeller"
+import Banners from "./Main Components/Admin/Banners/Banners"
+import { fetchAllCarousels } from "./Redux/bannersSlice"
 
 
 const appRouter = createBrowserRouter([
@@ -90,29 +98,62 @@ const appRouter = createBrowserRouter([
       },
       {
         path: "products",
-        element: <Products></Products>,
+        element: <SellerProducts></SellerProducts>
       },
       {
         path: "add-product",
         element: <AddNewProduct></AddNewProduct>
       },
       {
-        path: "edit-product",
+        path: "edit-product/:id",
         element: <EditProduct></EditProduct>
+      },
+      {
+        path: "product/:id",
+        element: <SellerSingleProduct></SellerSingleProduct>
       }
     ]
   },
 
   {
     path: "/admin",
-    element: <AdminLayout></AdminLayout>,
+    element: (
+      <ProtectedRoutes>
+        <AdminLayout></AdminLayout>
+      </ProtectedRoutes>
+    ),
     children: [
       {
-        path: "dashboard",
-        element: <Dashboard></Dashboard>
+        index: true,
+        element: <AdminDashboard></AdminDashboard>
+      },
+      {
+        path: "category",
+        element: <AdminCategory></AdminCategory>
+      },
+      {
+        path: "sellers",
+        element: <AdminSellers></AdminSellers>
+      },
+      {
+        path: "seller/:id",
+        element: <SelectedSeller></SelectedSeller>
+      },
+      {
+        path: "seller/pending",
+        element: <PendingSeller></PendingSeller>
+      },
+      {
+        path: "product/:id",
+        element: <AdminProductDetail></AdminProductDetail>
+      },
+      {
+        path: "banners",
+        element: <Banners></Banners>
       }
     ]
   },
+
 
   {
     path: "*",
@@ -124,30 +165,12 @@ const appRouter = createBrowserRouter([
 function App() {
 
   const dispatch = useDispatch();
-  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        setLoading(true)
-
-        const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/user/check-auth`, {
-          withCredentials: true,
-        });
-
-        dispatch(setUser(res.data.user));
-        console.log(res.data);
-      } catch (error) {
-        console.log(error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    checkAuth();
-  }, [dispatch]);
-
-  if (loading) return <div>Loading...</div>;
+    dispatch(checkAuth());
+    dispatch(fetchAllCategories())
+    dispatch(fetchAllCarousels())
+  }, []);
 
   return (
     <>

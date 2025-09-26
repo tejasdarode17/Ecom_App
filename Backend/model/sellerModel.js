@@ -25,21 +25,24 @@ const sellerSchema = new mongoose.Schema({
         required: true
     },
 
+    status: {
+        type: String,
+        enum: ["pending", "approved", "suspended", "banned", "rejected"],
+        default: "pending"
+    },
+
     role: {
         type: String,
         default: 'seller'
     },
 
-
     products: [
         {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Product",
-            required: true
         }
     ]
-
-})
+}, { timestamps: true })
 
 
 const Seller = mongoose.model('Seller', sellerSchema)

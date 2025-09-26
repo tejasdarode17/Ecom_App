@@ -23,6 +23,7 @@ export async function uploadImage(buffer) {
     }
 }
 
+
 export async function deleteImage(publicID) {
     try {
 
@@ -33,6 +34,39 @@ export async function deleteImage(publicID) {
         return result
     } catch (error) {
         console.log(error);
+    }
+}
+
+
+export async function uploadImages(buffers) {
+    const uploadSingle = (buffer) =>
+        new Promise((resolve, reject) => {
+            cloudinary.uploader.upload_stream(
+                {
+                    folder: "Ecom",
+                    resource_type: "image",
+                    transformation: [{ quality: "auto:eco" }],
+                },
+                (error, result) => {
+                    if (error) return reject(error);
+                    resolve(result);
+                }
+            ).end(buffer);
+        });
+
+    const results = await Promise.all(buffers.map(uploadSingle));
+    return results;
+}
+
+export async function deleteImages(publicIDs = []) {
+    try {
+        const results = await Promise.all(
+            publicIDs.map(id => cloudinary.uploader.destroy(id))
+        );
+        return results;
+    } catch (error) {
+        console.error("Cloudinary batch delete error:", error);
+        throw error;
     }
 }
 
