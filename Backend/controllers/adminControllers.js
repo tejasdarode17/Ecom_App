@@ -37,6 +37,7 @@ async function createAdmin(req, res) {
 
 }
 
+//-----------------Categories Controllers----------------------------
 export async function createCatogery(req, res) {
     try {
         const { name, image, description, } = req.body
@@ -195,6 +196,8 @@ export async function deleteCatogery(req, res) {
 
 
 
+//-----------------Admin Manage Sellers----------------------------
+
 export async function getAllSellers(req, res) {
     try {
         const adminID = req.user.id;
@@ -232,7 +235,6 @@ export async function getAllSellers(req, res) {
         });
     }
 }
-
 
 export async function getSelectedSeller(req, res) {
 
@@ -273,7 +275,6 @@ export async function getSelectedSeller(req, res) {
     }
 }
 
-
 export async function changeSellerStatus(req, res) {
     try {
         const { id } = req.params
@@ -307,6 +308,9 @@ export async function changeSellerStatus(req, res) {
 }
 
 
+
+//-----------------Carousel controllers----------------------------
+
 export async function createCarousel(req, res) {
     try {
         const { title, images } = req.body;
@@ -336,6 +340,7 @@ export async function createCarousel(req, res) {
         });
 
     } catch (error) {
+        //we can run deleteImages() function here if error come while adding carousel cuz image is already uplaoded in cloudnary
         console.log(error);
         return res.status(500).json({
             success: false,
@@ -345,14 +350,13 @@ export async function createCarousel(req, res) {
     }
 }
 
-
 export async function fetchCarousel(req, res) {
     try {
         const carousels = await Carousel.find();
         if (!carousels) {
             return res.status(400).json({
                 success: false,
-                message: "Carousel with same title already exists. Please change the title.",
+                message: "Carousels not found.",
             });
         }
         return res.status(201).json({
@@ -369,7 +373,6 @@ export async function fetchCarousel(req, res) {
         });
     }
 }
-
 
 export async function editCarousel(req, res) {
 
@@ -417,7 +420,7 @@ export async function editCarousel(req, res) {
         return res.status(201).json({
             success: true,
             message: "Carousel updated successfully",
-            carousels: carousel
+            carousel: carousel
         });
 
 
@@ -430,6 +433,51 @@ export async function editCarousel(req, res) {
         });
     }
 }
+
+export async function deleteCarousel(req, res) {
+
+    try {
+        const adminID = req.user.id
+        const { id } = req.params
+
+        if (!adminID || req.user.role !== "admin") {
+            return res.status(403).json({ success: false, message: "You are not authorized" });
+        }
+
+        const carousel = await Carousel.findById(id)
+
+        if (!carousel) {
+            return res.status(400).json({
+                success: false,
+                message: "Banner not found.",
+            });
+        }
+
+        if (carousel?.images.length > 0) {
+            for (const image of carousel?.images) {
+                await deleteImage(image?.public_id)
+            }
+        }
+
+        await Carousel.findByIdAndDelete(id);
+
+        return res.status(200).json({
+            success: true,
+            message: "Banner Deleted"
+        });
+
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: "Server error",
+            error: error.message,
+        });
+    }
+}
+
+
+
+//-----------------Banner Controllers----------------------------
 
 export async function createBanner(req, res) {
 
@@ -446,7 +494,7 @@ export async function createBanner(req, res) {
         if (existingBanner) {
             return res.status(400).json({
                 success: false,
-                message: "Carousel with same title already exists.",
+                message: "This banner already exist please delete that or edit that",
             });
         }
 
@@ -472,5 +520,72 @@ export async function createBanner(req, res) {
     }
 }
 
+export async function fetchBanners(req, res) {
+    try {
 
-// route banana hai iska banner create ka 
+        const banners = await Bannner.find()
+
+        if (!banners) {
+            return res.status(400).json({
+                success: false,
+                message: "Banners not found.",
+            });
+        }
+
+        return res.status(201).json({
+            success: true,
+            message: "banners fetched successfully",
+            banners
+        });
+
+
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: "Server error",
+            error: error.message,
+        });
+    }
+}
+
+export async function deleteBanner(req, res) {
+
+    try {
+        const adminID = req.user.id
+        const { id } = req.params
+
+        if (!adminID || req.user.role !== "admin") {
+            return res.status(403).json({ success: false, message: "You are not authorized" });
+        }
+
+        const banner = await Bannner.findById(id)
+
+        if (!banner) {
+            return res.status(400).json({
+                success: false,
+                message: "Banner not found.",
+            });
+        }
+
+        if (banner?.image?.public_id) {
+            await deleteImage(banner?.image?.public_id)
+        }
+
+        await Bannner.findByIdAndDelete(id);
+
+        return res.status(200).json({
+            success: true,
+            message: "Banner Deleted"
+        });
+
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: "Server error",
+            error: error.message,
+        });
+    }
+}
+
+
+

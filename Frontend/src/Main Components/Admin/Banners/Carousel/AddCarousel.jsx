@@ -4,6 +4,8 @@ import { useState } from "react"
 import CarouselForm from "./CarouselForm";
 import useUploadImages from "@/Custom Hooks/useUploadImages";
 import axios from "axios";
+import { useDispatch } from "react-redux";
+import { addCarousels } from "@/Redux/bannersSlice";
 
 
 
@@ -12,6 +14,9 @@ const AddCarousal = () => {
     const [loading, setLoading] = useState(false);
     const [open, setOpen] = useState(false);
     const { uploadImagesToServer } = useUploadImages()
+    const [error, setError] = useState(null)
+
+    const dispatch = useDispatch()
     async function handleSubmit(carousalType, carouselImages) {
         try {
             setLoading(true);
@@ -23,13 +28,13 @@ const AddCarousal = () => {
             const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/admin/add-carousel`, payload, {
                 withCredentials: true,
             });
-            console.log(response.data);
+            dispatch(addCarousels(response?.data?.carousel))
             setOpen(false);
         } catch (error) {
             console.log(error);
+            setError(error?.response?.data?.message || "Something went wrong on the server. Please try again later.")
         } finally {
             setLoading(false);
-            setOpen(false)
         }
     }
 
@@ -42,7 +47,7 @@ const AddCarousal = () => {
                 <DialogHeader>
                     <DialogTitle>Add Carousel</DialogTitle>
                 </DialogHeader>
-                <CarouselForm onSubmit={handleSubmit} loading={loading}></CarouselForm>
+                <CarouselForm onSubmit={handleSubmit} error={error} loading={loading}></CarouselForm>
             </DialogContent>
         </Dialog >
     )

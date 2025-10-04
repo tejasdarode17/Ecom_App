@@ -7,6 +7,7 @@ import sellerRouter from "./routes/sellerRoutes.js"
 import authRouter from "./routes/Auth Routes/authRoutes.js"
 import imageRouter from "./routes/imageRoutes.js"
 import adminRouter from "./routes/adminRoutes.js"
+import userRouter from "./routes/userRoutes.js"
 import cloudinaryConfig from "./config/cloudinary.js";
 
 dotenv.config();
@@ -39,6 +40,8 @@ app.use("/api/v1", authRouter)
 app.use("/api/v1", imageRouter)
 app.use("/api/v1", sellerRouter)
 app.use("/api/v1", adminRouter)
+app.use("/api/v1", userRouter)
+
 
 
 

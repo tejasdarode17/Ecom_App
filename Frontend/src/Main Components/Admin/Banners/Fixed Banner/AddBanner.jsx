@@ -4,11 +4,15 @@ import BannerForm from "./BannerForm";
 import { useState } from "react";
 import useUploadImage from "@/Custom Hooks/useUploadImage";
 import axios from "axios";
+import { useDispatch } from "react-redux";
+import { addBanners } from "@/Redux/bannersSlice";
 
 const AddBanner = () => {
     const [loading, setLoading] = useState(false)
     const { uploadImageToServer } = useUploadImage()
     const [open, setOpen] = useState(false)
+    const dispatch = useDispatch()
+    const [error, setError] = useState(null)
     async function handleSubmit(bannerFrom, setBannerForm) {
         try {
             setLoading(true);
@@ -22,9 +26,11 @@ const AddBanner = () => {
                 withCredentials: true,
             });
             console.log(respone);
+            dispatch(addBanners(respone?.data?.banner))
             setOpen(false);
         } catch (error) {
             console.log(error);
+            setError(error?.response?.data?.message || "Something went wrong on the server. Please try again later.")
         } finally {
             setLoading(false);
         }
@@ -44,8 +50,7 @@ const AddBanner = () => {
                         <DialogTitle>Add Banner</DialogTitle>
                         <DialogDescription></DialogDescription>
                     </DialogHeader>
-
-                    <BannerForm onSubmit={handleSubmit} loading={loading}></BannerForm>
+                    <BannerForm onSubmit={handleSubmit} error={error} loading={loading}></BannerForm>
                 </DialogContent>
             </Dialog>
         </>

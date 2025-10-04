@@ -3,6 +3,7 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import Autoplay from 'embla-carousel-autoplay';
 import { useSelector } from "react-redux";
 import EditCarousal from "./EditCarousel";
+import DeleteCarousel from "./DeleteCarousel";
 
 const Carousels = () => {
     const { carousels } = useSelector((store) => store.banners)
@@ -20,7 +21,10 @@ const CarouselCard = ({ carousel }) => {
         <Card className="my-10">
             <CardHeader className="flex justify-between items-center">
                 <CardTitle>{carousel?.title}</CardTitle>
-                <EditCarousal carousel={carousel}></EditCarousal>
+                <div className="flex gap-3">
+                    <EditCarousal carousel={carousel}></EditCarousal>
+                    <DeleteCarousel carousel={carousel}></DeleteCarousel>
+                </div>
             </CardHeader>
             <CardContent>
                 <Carousel

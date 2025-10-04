@@ -7,7 +7,7 @@ import { deleteImage } from "../utils/cloudinaryHandler.js";
 
 export async function addProduct(req, res) {
 
-    const { name, category, image, brand, description, stock, price, salePrice } = req.body
+    const { name, category, images, brand, description, stock, price, salePrice } = req.body
 
     const sellerID = req.user.id
 
@@ -20,7 +20,7 @@ export async function addProduct(req, res) {
             })
         }
 
-        if (!image || !image.url || !image.public_id) {
+        if (images.length < 0) {
             return res.status(400).json({ message: "Image data is missing" });
         }
 
@@ -36,7 +36,7 @@ export async function addProduct(req, res) {
         const newProduct = new Product({
             name,
             category,
-            image,
+            images,
             brand,
             description,
             stock,
@@ -155,7 +155,7 @@ export async function editProduct(req, res) {
 
         const { id } = req.params;
         const sellerID = req.user.id;
-        const { name, category, image, brand, description, stock, price } = req.body;
+        const { name, category, images, brand, description, stock, price } = req.body;
 
 
         const seller = await Seller.findById(sellerID);
@@ -183,12 +183,12 @@ export async function editProduct(req, res) {
         if (stock !== undefined) product.stock = stock;
         if (price !== undefined) product.price = price;
 
-        if (image && image.url && image.public_id) {
-            if (product.image?.public_id !== image.public_id) {
-                await deleteImage(product.image?.public_id);
-                product.image = image;
-            }
+        const incomingPublicIds = images.map(img => img.public_id);
+        const imagesToDelete = product.images.filter((i) => !incomingPublicIds.includes(i.public_id))
+        for (const img of imagesToDelete) {
+            deleteImage(img.public_id)
         }
+        product.images = images
 
         await product.save();
         await product.populate([
@@ -224,13 +224,16 @@ export async function deleteProduct(req, res) {
             return res.status(404).json({ success: false, message: "Product not found" });
         }
 
-        if (product.seller.toString() !== sellerID) {
+        if (product?.seller?.toString() !== sellerID) {
             return res.status(403).json({ success: false, message: "Unauthorized" });
         }
 
-        if (product?.image?.public_id) {
-            await deleteImage(product?.image?.public_id);
+        if (product?.images?.length > 0) {
+            for (const img of product.images) {
+                deleteImage(img?.public_id)
+            }
         }
+
         await Product.findByIdAndDelete(id)
         await Seller.findByIdAndUpdate(sellerID, { $pull: { products: id } });
 

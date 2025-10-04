@@ -25,13 +25,26 @@ const userSchema = new mongoose.Schema({
         default: 'user'
     },
 
+    viewedProducts: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Product"
+        }
+    ],
+
+    wishlist: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Product"
+        }
+    ],
     orders: [
         {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Product",
         }
     ]
-    
+
 })
 
 

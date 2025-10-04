@@ -1,6 +1,6 @@
 import express from "express"
 import { verifyUser } from "../middlewares/auth.js"
-import { changeSellerStatus, createBanner, createCarousel, createCatogery, deleteCatogery, editCarousel, editCategory, fetchCarousel, getAllCategories, getAllSellers, getSelectedSeller } from "../controllers/adminControllers.js"
+import { changeSellerStatus, createBanner, createCarousel, createCatogery, deleteBanner, deleteCarousel, deleteCatogery, editCarousel, editCategory, fetchBanners, fetchCarousel, getAllCategories, getAllSellers, getSelectedSeller } from "../controllers/adminControllers.js"
 
 const route = express.Router()
 
@@ -15,11 +15,13 @@ route.post("/admin/status-seller/:id", verifyUser, changeSellerStatus)
 
 
 route.post("/admin/add-carousel", verifyUser, createCarousel)
-route.post("/admin/edit-carousel/:id", verifyUser, editCarousel)
 route.get("/carousels", fetchCarousel)
-
+route.post("/admin/edit-carousel/:id", verifyUser, editCarousel)
+route.delete("/admin/delete-carousel/:id", verifyUser, deleteCarousel)
 
 route.post("/admin/add-banner", verifyUser, createBanner)
+route.get("/banners", fetchBanners)
+route.delete("/admin/delete-banner/:id", verifyUser, deleteBanner)
 
 
 

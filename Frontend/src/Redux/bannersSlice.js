@@ -17,15 +17,51 @@ export const fetchAllCarousels = createAsyncThunk("fetch/carousels", async (_, {
     }
 })
 
+export const fetchAllBanners = createAsyncThunk("fetch/banners", async (_, { rejectWithValue }) => {
+    try {
+        const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/banners`, {
+            withCredentials: true,
+        });
+        console.log(response.data);
+        return response.data.banners
+    } catch (error) {
+        console.log(error);
+        return rejectWithValue(
+            error.response?.data?.message || "Something went wrong on server"
+        );
+    }
+})
+
 const bannersSlice = createSlice({
     name: "banners",
     initialState: {
-        loading: "false",
+        loading: false,
+        bannerLoading: false,
         carousels: [],
         banners: [],
     },
     reducers: {
-
+        addBanners(state, action) {
+            state.banners.push(action.payload)
+        },
+        addCarousels(state, action) {
+            state.carousels.push(action.payload)
+        },
+        deleteCarousel(state, action) {
+            const { id } = action.payload
+            state.carousels = state.carousels.filter((c) => c._id !== id)
+        },
+        deleteBanner(state, action) {
+            const { id } = action.payload
+            state.banners = state.banners.filter((b) => b._id !== id)
+        },
+        editCarousel(state, action) {
+            const { id, newCarousel } = action.payload;
+            const index = state.carousels.findIndex((c) => c._id === id);
+            if (index !== -1) {
+                state.carousels[index] = newCarousel;
+            }
+        }
     },
     extraReducers: (builder) => {
         builder
@@ -39,8 +75,19 @@ const bannersSlice = createSlice({
             .addCase(fetchAllCarousels.rejected, (state) => {
                 state.loading = false
             })
+        builder
+            .addCase(fetchAllBanners.pending, (state) => {
+                state.bannerLoading = true
+            })
+            .addCase(fetchAllBanners.fulfilled, (state, action) => {
+                state.bannerLoading = false
+                state.banners = action.payload
+            })
+            .addCase(fetchAllBanners.rejected, (state) => {
+                state.bannerLoading = false
+            })
     }
 })
 
-export const { } = bannersSlice.actions
+export const { addBanners, addCarousels, deleteBanner, deleteCarousel, editCarousel } = bannersSlice.actions
 export default bannersSlice.reducer

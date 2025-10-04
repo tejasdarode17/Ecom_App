@@ -18,7 +18,6 @@ const SellerLayout = () => {
     }, [isAuthenticated]);
 
 
-
     return (
         <div className="flex min-h-screen w-full">
             <div className="">

@@ -6,20 +6,18 @@ import { CloudUpload, X } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import React from "react";
 
-const CarouselForm = ({ initialData = {}, onSubmit, loading }) => {
+const CarouselForm = ({ initialData = {}, onSubmit, loading, error }) => {
     const [carouselType, setCarouselType] = useState("");
     const [carouselImages, setCarouselImages] = useState([]);
 
     const id = initialData?._id;
-    console.log(id);
-
 
     useEffect(() => {
         if (initialData?.title) setCarouselType(initialData?.title);
         if (initialData?.images) setCarouselImages(initialData?.images);
     }, [initialData]);
 
-    //this function is storing files one by one in an array which is createe by this Array.from method 
+    //this function is storing files one by one in an array which is created by this Array.from method 
     function handleFileChange(e) {
         const files = Array.from(e.target.files);
         setCarouselImages((prev) => [...prev, ...files]);
@@ -63,7 +61,6 @@ const CarouselForm = ({ initialData = {}, onSubmit, loading }) => {
                     />
 
                     <div className="flex flex-wrap gap-3">
-
                         {carouselImages.length > 0 ? (
                             carouselImages.map((file, idx) => (
                                 <div
@@ -107,6 +104,21 @@ const CarouselForm = ({ initialData = {}, onSubmit, loading }) => {
                         </label>
                     </div>
                 </div>
+
+                {error && (
+                    <div className="flex items-center gap-2 p-3 rounded-md bg-red-100 border border-red-300 text-red-700 text-sm shadow">
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-4 w-4 text-red-600"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                        >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <p>{error}</p>
+                    </div>
+                )}
 
                 <Button type="submit" variant="outline" disabled={loading}>
                     {loading ? "Saving..." : "Save Carousel"}

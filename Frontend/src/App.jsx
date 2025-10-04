@@ -5,7 +5,7 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom"
 import Login from "./Main Components/Shopers/Shoper Auth/UserLogin"
 import Register from "./Main Components/Shopers/Shoper Auth/UserRegister"
 import Home from "./Main Components/Shopers/Home"
-import { useDispatch, useSelector } from "react-redux"
+import { useDispatch } from "react-redux"
 import SellerAuthLayout from "./Layouts/SellerAuthLayout"
 import SellerRegister from "./Main Components/Seller/Seller Auth/SellerRegister"
 import SellerLogin from "./Main Components/Seller/Seller Auth/SellerLogin"
@@ -19,15 +19,16 @@ import { AddNewProduct } from "./Main Components/Seller/Seller Products/AddNewPr
 import EditProduct from "./Main Components/Seller/Seller Products/EditProduct"
 import SellerProducts from "./Main Components/Seller/Seller Products/SellerProducts"
 import SellerSingleProduct from "./Main Components/Seller/Seller Products/SellerSingleProduct"
-import AdminDashboard from "./Main Components/Admin/AdminDashboard"
+import AdminDashboard from "./Main Components/Admin/Admin Dashboard/AdminDashboard"
 import AdminCategory from "./Main Components/Admin/Admin Categories/AdminCategory"
 import { fetchAllCategories } from "./Redux/categoriesSlice"
 import AdminSellers from "./Main Components/Admin/Manage Sellers/AdminSeller"
 import SelectedSeller from "./Main Components/Admin/Manage Sellers/SelectedSeller"
 import AdminProductDetail from "./Main Components/Admin/AdminProductDetail"
 import PendingSeller from "./Main Components/Admin/Manage Sellers/PendingSeller"
-import Banners from "./Main Components/Admin/Banners/Banners"
-import { fetchAllCarousels } from "./Redux/bannersSlice"
+import { fetchAllBanners, fetchAllCarousels } from "./Redux/bannersSlice"
+import AdminBanners from "./Main Components/Admin/Banners/AdminBanners"
+import ProductsLayout from "./Main Components/Shopers/Products/ProductsLayout"
 
 
 const appRouter = createBrowserRouter([
@@ -80,6 +81,10 @@ const appRouter = createBrowserRouter([
       {
         index: true,
         element: <Home></Home>
+      },
+      {
+        path: "/products",
+        element: <ProductsLayout></ProductsLayout>
       }
     ]
   },
@@ -149,7 +154,7 @@ const appRouter = createBrowserRouter([
       },
       {
         path: "banners",
-        element: <Banners></Banners>
+        element: <AdminBanners></AdminBanners>
       }
     ]
   },
@@ -170,6 +175,7 @@ function App() {
     dispatch(checkAuth());
     dispatch(fetchAllCategories())
     dispatch(fetchAllCarousels())
+    dispatch(fetchAllBanners())
   }, []);
 
   return (

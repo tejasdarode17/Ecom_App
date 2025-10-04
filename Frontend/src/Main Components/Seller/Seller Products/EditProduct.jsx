@@ -4,8 +4,8 @@ import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
 import ProductForm from './ProductForm';
 import { useDispatch, useSelector } from 'react-redux';
-import useUploadImage from '@/Custom Hooks/useUploadImage';
 import { updateProduct } from '@/Redux/sellerSlice';
+import useUploadImages from '@/Custom Hooks/useUploadImages';
 
 const EditProduct = () => {
 
@@ -15,17 +15,21 @@ const EditProduct = () => {
     const dispatch = useDispatch()
     const { id } = useParams()
 
-    const { uploadImageToServer } = useUploadImage()
+    const { uploadImagesToServer } = useUploadImages()
 
-    async function handleSubmit(formData, setFormData) {
-
+    async function handleSubmit(formData, setFormData, productImages, setProductImages) {
         try {
             setLoading(true)
 
-            //only upload if the image is file 
-            let uploadedImage = formData.image;
-            if (formData.image && formData.image instanceof File) {
-                uploadedImage = await uploadImageToServer(formData.image);
+            let uploadedImages = []
+            let imagesToUpload = productImages?.filter((i) => i instanceof File)
+            let existingImages = productImages?.filter((i) => i.url)
+
+            if (imagesToUpload.length > 0) {
+                const uploaded = await uploadImagesToServer(imagesToUpload)
+                uploadedImages = [...uploaded, ...existingImages]
+            } else {
+                uploadedImages = existingImages
             }
 
             const productData = {
@@ -35,7 +39,7 @@ const EditProduct = () => {
                 category: formData.category,
                 stock: Number(formData.stock),
                 description: formData.description,
-                image: uploadedImage, //this is object 
+                images: uploadedImages,
             };
 
             const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/seller/edit/product/${id}`, productData, {
@@ -46,7 +50,8 @@ const EditProduct = () => {
             dispatch(updateProduct({ id, product: data.product }))
             console.log(data);
 
-            setFormData({ name: "", price: "", salePrice: "", brand: "", category: "", stock: "", description: "", image: null, });
+            setFormData({ name: "", price: "", salePrice: "", brand: "", category: "", stock: "", description: "", });
+            setProductImages([])
             navigate(`/seller/product/${id}`)
         } catch (err) {
             console.log(err);
@@ -76,3 +81,7 @@ const EditProduct = () => {
 
 export default EditProduct
 
+
+
+
+//new product add karke images wdit karke dekhna hai aur uske bad images[0] wala issue solve karna hai 

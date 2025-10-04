@@ -6,7 +6,7 @@ import ProductsActionButton from './ProductsActionButtons';
 const ProductsTable = ({ products, role }) => {
     const location = useLocation();
     const path = location.pathname;
-
+    console.log(products);
     return (
         <>
             {/* Table Header */}
@@ -35,7 +35,7 @@ const ProductsTable = ({ products, role }) => {
                             {/* Image */}
                             <div className="flex">
                                 <img
-                                    src={product?.image?.url}
+                                    src={product?.images[0]?.url}
                                     alt={product?.name}
                                     className="h-12 w-12 rounded object-cover"
                                 />

@@ -4,8 +4,9 @@ import { toast } from "sonner";
 import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
 import { clearUser } from "@/Redux/authSlice";
-import { Input } from "@/components/ui/input";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuPortal, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import SearchBar from "./SearchBar";
+
 
 function Navbar() {
 
@@ -21,13 +22,8 @@ function Navbar() {
           </Link>
 
           {/* Search */}
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 " size={18} />
-            <Input
-              placeholder="Search products..."
-              className="bg-[#F0F5FF] pl-10 w-full"
-            />
-          </div>
+          <SearchBar></SearchBar>
+
         </div>
 
         <div className="flex gap-6 text-gray-700 font-medium items-center">
@@ -46,7 +42,6 @@ function Navbar() {
         </div>
       </div>
     </nav>
-
   );
 }
 
@@ -107,7 +102,5 @@ const DropDownMenu = () => {
     </DropdownMenu>
   )
 }
-
-
 
 export default Navbar;

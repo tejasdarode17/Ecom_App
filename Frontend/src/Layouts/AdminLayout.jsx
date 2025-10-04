@@ -1,4 +1,4 @@
-import AdminSidebar from "@/Main Components/Admin/AdminSidebar"
+import AdminSidebar from "@/Main Components/Admin/Admin Navigation/AdminSidebar"
 import { fetchAllSellers } from "@/Redux/adminSlice"
 import { useEffect } from "react"
 import { useDispatch } from "react-redux"

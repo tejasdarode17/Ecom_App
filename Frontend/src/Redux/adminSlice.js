@@ -9,7 +9,6 @@ export const fetchAllSellers = createAsyncThunk("fetch/seller", async ({ status,
                 withCredentials: true
             }
         );
-
         return {
             status,
             sellers: response.data.sellers,

@@ -4,6 +4,8 @@ import { useState } from "react"
 import CarouselForm from "./CarouselForm";
 import useUploadImages from "@/Custom Hooks/useUploadImages";
 import axios from "axios";
+import { Pencil } from "lucide-react";
+import { useDispatch } from "react-redux";
 
 
 
@@ -12,6 +14,9 @@ const EditCarousal = ({ carousel }) => {
     const [loading, setLoading] = useState(false);
     const [open, setOpen] = useState(false);
     const { uploadImagesToServer } = useUploadImages()
+    const [error, setError] = useState(null)
+
+    const dispatch = useDispatch()
 
     async function handleSubmit(carousalType, carouselImages, id) {
         try {
@@ -38,25 +43,28 @@ const EditCarousal = ({ carousel }) => {
             });
 
             console.log(response.data);
+            dispatch({ id, newCarousel: response?.data?.carousel })
             setOpen(false);
         } catch (error) {
             console.log(error);
+            setError(error?.response?.data?.message || "Something went wrong on the server. Please try again later.")
         } finally {
             setLoading(false);
-            setOpen(false)
         }
     }
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button variant="outline">Edit Carousel</Button>
+                <Button variant="outline">
+                    <Pencil />
+                </Button>
             </DialogTrigger>
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>Edit Carousel</DialogTitle>
                 </DialogHeader>
-                <CarouselForm onSubmit={handleSubmit} initialData={carousel} loading={loading}></CarouselForm>
+                <CarouselForm onSubmit={handleSubmit} initialData={carousel} error={error} loading={loading}></CarouselForm>
             </DialogContent>
         </Dialog >
     )

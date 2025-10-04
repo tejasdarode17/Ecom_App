@@ -65,9 +65,8 @@ const SellerProductsSearchAndFilter = () => {
                     <option>Categories</option>
                     {
                         categories.map((cat) => (
-                            <div>
-                                <option>{cat?.name}</option>
-                            </div>
+                            <option key={cat._id}>{cat?.name}</option>
+
                         ))
                     }
                 </select>
