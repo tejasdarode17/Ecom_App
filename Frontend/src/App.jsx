@@ -13,7 +13,7 @@ import SellerDashboard from "./Main Components/Seller/Seller Dashboard/SellerDas
 import SellerLayout from "./Layouts/SellerLayout"
 import ProtectedRoutes from "./Main Components/Other/ProtectedRoutes"
 import { useEffect } from "react"
-import { checkAuth, } from "./Redux/authSlice"
+import { checkAuth } from "./Redux/authSlice"
 import ErrorPage from "./Main Components/Other/ErrorPage"
 import { AddNewProduct } from "./Main Components/Seller/Seller Products/AddNewProduct"
 import EditProduct from "./Main Components/Seller/Seller Products/EditProduct"
@@ -29,6 +29,12 @@ import PendingSeller from "./Main Components/Admin/Manage Sellers/PendingSeller"
 import { fetchAllBanners, fetchAllCarousels } from "./Redux/bannersSlice"
 import AdminBanners from "./Main Components/Admin/Banners/AdminBanners"
 import ProductsLayout from "./Main Components/Shopers/Products/ProductsLayout"
+import ProductDetails from "./Main Components/Shopers/Products/ProductDetails"
+import AddCategory from "./Main Components/Admin/Admin Categories/AddCategory"
+import EditCategory from "./Main Components/Admin/Admin Categories/EditCategory"
+import Cart from "./Main Components/Shopers/Cart/Cart"
+import CheckOut from "./Main Components/Shopers/Cart/CheckOut"
+import { fetchCartThunk } from "./Redux/cartSlice"
 
 
 const appRouter = createBrowserRouter([
@@ -85,7 +91,19 @@ const appRouter = createBrowserRouter([
       {
         path: "/products",
         element: <ProductsLayout></ProductsLayout>
-      }
+      },
+      {
+        path: "/product/:slug",
+        element: <ProductDetails></ProductDetails>
+      },
+      {
+        path: "/cart",
+        element: <Cart></Cart>
+      },
+      {
+        path: "/checkout",
+        element: <CheckOut></CheckOut>
+      },
     ]
   },
 
@@ -137,6 +155,14 @@ const appRouter = createBrowserRouter([
         element: <AdminCategory></AdminCategory>
       },
       {
+        path: "add-category",
+        element: <AddCategory></AddCategory>
+      },
+      {
+        path: "edit-category/:id",
+        element: < EditCategory ></EditCategory >
+      },
+      {
         path: "sellers",
         element: <AdminSellers></AdminSellers>
       },
@@ -159,7 +185,6 @@ const appRouter = createBrowserRouter([
     ]
   },
 
-
   {
     path: "*",
     element: <ErrorPage />
@@ -176,6 +201,8 @@ function App() {
     dispatch(fetchAllCategories())
     dispatch(fetchAllCarousels())
     dispatch(fetchAllBanners())
+    dispatch(fetchCartThunk())
+
   }, []);
 
   return (

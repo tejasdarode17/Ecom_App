@@ -5,8 +5,8 @@ const Categories = () => {
     const { categories } = useSelector((store) => store.categories)
 
     return (
-        <div className="bg-white shadow-md p-6 my-2 mx-2">
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-6">
+        <div className="w-full mx-auto my-2 bg-white shadow-md p-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-7 gap-6">
                 {categories.map((cat, idx) => (
                     <div
                         key={idx}

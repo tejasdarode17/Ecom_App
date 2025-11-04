@@ -6,6 +6,7 @@ export const checkAuth = createAsyncThunk("auth/checkAuth", async (_, { rejectWi
         const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/user/check-auth`, {
             withCredentials: true,
         });
+        console.log(response?.data?.user);
         return response?.data?.user
     } catch (error) {
         return rejectWithValue(
@@ -19,17 +20,29 @@ const authSlice = createSlice({
     initialState: {
         isAuthenticated: false,
         loading: false,
-        userData: {}
+        userData: {},
+        userAddresses: []
     },
     reducers: {
         setUser(state, action) {
             state.isAuthenticated = true
             state.userData = action.payload
+            state.userAddresses = action.payload.addresses || []
         },
         clearUser(state) {
             state.userData = {}
+            state.userAddresses = []
             state.isAuthenticated = false
+        },
+        updateUserAddresses(state, action) {
+            state.userAddresses.push(action.payload)
+        },
+        editUserAddress(state, action) {
+            const { id, address } = action.payload
+            const addressIndex = state.userAddresses.findIndex((a) => a._id == id)
+            state.userAddresses[addressIndex] = address
         }
+
     },
     extraReducers: (builder) => {
         builder
@@ -41,6 +54,7 @@ const authSlice = createSlice({
                 state.loading = false
                 state.isAuthenticated = true
                 state.userData = action.payload
+                state.userAddresses = action.payload?.addresses
             })
             .addCase(checkAuth.rejected, (state) => {
                 state.loading = false
@@ -49,5 +63,5 @@ const authSlice = createSlice({
     }
 })
 
-export const { clearUser, setUser } = authSlice.actions;
+export const { clearUser, setUser, userAddresses, setUserAddresses, updateUserAddresses, editUserAddress } = authSlice.actions;
 export default authSlice.reducer;

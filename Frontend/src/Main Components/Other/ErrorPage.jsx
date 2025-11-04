@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { replace, useNavigate } from "react-router-dom";
 
 export default function ErrorPage() {
     const { userData } = useSelector((store) => store.auth)
@@ -12,6 +12,9 @@ export default function ErrorPage() {
         }
         if (userData.role == "seller") {
             navigate("/seller")
+        }
+        if (userData.admin == "seller") {
+            navigate("/admin")
         }
     }
 

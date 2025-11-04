@@ -1,15 +1,18 @@
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Pencil } from "lucide-react";
 import useUploadImage from "@/Custom Hooks/useUploadImage";
 import axios from "axios";
 import CategoryForm from "./CategoryForm";
+import { useLocation, useNavigate, } from "react-router-dom";
+import { StepBack } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
-const EditCategory = ({ cat }) => {
+const EditCategory = () => {
 
     const [editLoading, setLoading] = useState(false)
     const { uploadImageToServer } = useUploadImage()
+    const location = useLocation();
+    const cat = location.state?.cat;
+    const navigate = useNavigate()
 
     async function editCategory(formData, setformData, id) {
         try {
@@ -24,13 +27,17 @@ const EditCategory = ({ cat }) => {
             const payload = {
                 name: formData.name,
                 description: formData.description,
-                image: uploadedImage
+                image: uploadedImage,
+                attributes: formData.attributes
             }
+
             const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/admin/edit-category/${id}`, payload, {
                 withCredentials: true,
             });
-            setformData({ name: "", description: "", image: null })
+            console.log(response?.data);
+            setformData({ name: "", description: "", image: null, attributes: [] })
             setLoading(false)
+            navigate("/admin/category")
         } catch (error) {
             console.log(error);
         } finally {
@@ -39,20 +46,17 @@ const EditCategory = ({ cat }) => {
     }
 
     return (
-        <Dialog>
-            <DialogTrigger asChild>
-                <Button size="sm" variant="outline">
-                    <Pencil className="h-4 w-4" />
-                </Button>
-            </DialogTrigger>
-            <DialogContent>
-                <DialogHeader>
-                    <DialogTitle>Edit Category</DialogTitle>
-                    <DialogDescription>Edit details and save</DialogDescription>
-                </DialogHeader>
+        <div className="w-full">
+            <div className="flex justify-between items-center mb-5">
+                <h1 className="text-2xl font-bold text-gray-800">Edit Category</h1>
+                <Button variant="outline" className="pointer" onClick={() => navigate("/admin/category")} ><StepBack></StepBack>Back</Button>
+            </div>
+
+
+            <div className="mt-10">
                 <CategoryForm initialData={cat} loading={editLoading} onSubmit={editCategory} />
-            </DialogContent>
-        </Dialog>
+            </div>
+        </div>
     )
 }
 

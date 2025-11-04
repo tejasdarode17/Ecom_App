@@ -20,6 +20,21 @@ const userSchema = new mongoose.Schema({
         unique: true
     },
 
+    addresses: [
+        {
+            name: { type: String, required: true },
+            phoneNumber: { type: String },
+            pinCode: { type: String, required: true },
+            locality: { type: String, required: true },
+            address: { type: String, required: true },
+            city: { type: String, required: true },
+            state: { type: String, required: true },
+            landmark: { type: String, required: true },
+            label: { type: String, default: "Home" },
+            isDefault: { type: Boolean, default: false },
+        },
+    ],
+
     role: {
         type: String,
         default: 'user'
@@ -43,7 +58,13 @@ const userSchema = new mongoose.Schema({
             type: mongoose.Schema.Types.ObjectId,
             ref: "Product",
         }
-    ]
+    ],
+
+    cart: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Cart",
+        default: null
+    }
 
 })
 

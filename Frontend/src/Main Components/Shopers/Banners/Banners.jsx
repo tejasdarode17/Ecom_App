@@ -20,7 +20,7 @@ const Banners = () => {
 const MainCarousal = ({ mainCarousel }) => {
 
     return (
-        <div className="relative w-full hidden xl:block">
+        <div className="relative w-full hidden xl:block mb-2">
             <Carousel
                 className="w-full overflow-hidden"
                 opts={{ loop: true }}
@@ -35,7 +35,7 @@ const MainCarousal = ({ mainCarousel }) => {
 
                     {
                         mainCarousel?.images?.map((image) => (
-                            <CarouselItem>
+                            <CarouselItem key={image._id}>
                                 <img
                                     src={image?.url}
                                     alt=""

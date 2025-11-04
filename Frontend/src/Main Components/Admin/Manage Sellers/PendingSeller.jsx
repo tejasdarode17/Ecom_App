@@ -25,4 +25,4 @@ export default PendingSeller
 
 
 
-//this show action prop is bacically removing the path.includes() check cuz we dont want to show the action buttons in the AdminSeller
+//this showActions prop is bacically removing the path.includes() check cuz we dont want to show the action buttons in the AdminSeller

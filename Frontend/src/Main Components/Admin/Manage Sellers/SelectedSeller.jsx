@@ -18,9 +18,6 @@ const SelectedSeller = () => {
     const { userData } = useSelector((store) => store.auth)
     const dispatch = useDispatch();
 
-    // this api is not necesssary to call cuz we can directly show all the products which is coming with the seller info 
-    //we will get only the the personal info 
-    //that can be passed using the state
     async function fetchSelectedSeller() {
         try {
             setLoading(true)
@@ -136,9 +133,9 @@ const SelectedSeller = () => {
 };
 
 
-
-//we have to make the api like fetchSellerProduct with the help of admin we have one but this api can be access by seller
-//reviews ka model banega 
+//fetchSelectedSeller is unnessary we can show seller information from where all the seller information is coming.
+//  we can use router state or we can dispatch setSeller from seller table using onClick 
+//we have to make the api like fetchSellerProduct with the admin  
 
 
 

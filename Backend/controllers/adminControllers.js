@@ -40,14 +40,13 @@ async function createAdmin(req, res) {
 //-----------------Categories Controllers----------------------------
 export async function createCatogery(req, res) {
     try {
-        const { name, image, description, } = req.body
+        const { name, image, description, attributes } = req.body
 
         const adminID = req.user.id
 
         if (!name || !image) {
             return res.status(400).json({ success: false, message: "Name is required" });
         }
-
 
         const admin = await Admin.findById(adminID);
         if (!admin || admin.role !== "admin") {
@@ -68,7 +67,8 @@ export async function createCatogery(req, res) {
             name,
             slug,
             description,
-            image
+            image,
+            attributes
         })
 
         return res.status(201).json({
@@ -83,6 +83,54 @@ export async function createCatogery(req, res) {
             message: "Server error",
             error: error.message,
         })
+    }
+}
+
+export async function editCategory(req, res) {
+    try {
+        const { id } = req.params;
+        const { name, image, description, attributes } = req.body;
+        const adminID = req.user.id;
+
+        const admin = await Admin.findById(adminID);
+
+        if (!admin || admin.role !== "admin") {
+            return res.status(403).json({ success: false, message: "You are not authorized" });
+        }
+
+        const category = await Category.findById(id);
+        if (!category) {
+            return res.status(404).json({ success: false, message: "Category not found" });
+        }
+
+        if (name) {
+            category.name = name;
+            category.slug = slugify(name, { lower: true, strict: true });
+        }
+
+        if (description) category.description = description;
+        if (attributes) category.attributes = attributes
+
+        if (image && image.url && image.public_id) {
+            if (category.image.public_id !== image.public_id) {
+                await deleteImage(category.image.public_id);
+                category.image = image;
+            }
+        }
+
+        await category.save();
+
+        return res.status(200).json({
+            success: true,
+            message: "Category updated successfully",
+            category,
+        });
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: "Server error",
+            error: error.message,
+        });
     }
 }
 
@@ -106,53 +154,6 @@ export async function getAllCategories(req, res) {
         })
     }
 
-}
-
-export async function editCategory(req, res) {
-    try {
-        const { id } = req.params;
-        const { name, image, description } = req.body;
-        const adminID = req.user.id;
-
-        const admin = await Admin.findById(adminID);
-
-        if (!admin || admin.role !== "admin") {
-            return res.status(403).json({ success: false, message: "You are not authorized" });
-        }
-
-        const category = await Category.findById(id);
-        if (!category) {
-            return res.status(404).json({ success: false, message: "Category not found" });
-        }
-
-        if (name) {
-            category.name = name;
-            category.slug = slugify(name, { lower: true, strict: true });
-        }
-
-        if (description) category.description = description;
-
-        if (image && image.url && image.public_id) {
-            if (category.image.public_id !== image.public_id) {
-                await deleteImage(category.image.public_id);
-                category.image = image;
-            }
-        }
-
-        await category.save();
-
-        return res.status(200).json({
-            success: true,
-            message: "Category updated successfully",
-            category,
-        });
-    } catch (error) {
-        return res.status(500).json({
-            success: false,
-            message: "Server error",
-            error: error.message,
-        });
-    }
 }
 
 export async function deleteCatogery(req, res) {
@@ -193,8 +194,6 @@ export async function deleteCatogery(req, res) {
         })
     }
 }
-
-
 
 //-----------------Admin Manage Sellers----------------------------
 
@@ -306,7 +305,6 @@ export async function changeSellerStatus(req, res) {
         })
     }
 }
-
 
 
 //-----------------Carousel controllers----------------------------
@@ -474,8 +472,6 @@ export async function deleteCarousel(req, res) {
         });
     }
 }
-
-
 
 //-----------------Banner Controllers----------------------------
 

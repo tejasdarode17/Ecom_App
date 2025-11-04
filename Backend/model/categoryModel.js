@@ -1,42 +1,62 @@
 import mongoose from "mongoose";
 
+const attributeSchema = new mongoose.Schema({
+    name: {
+        type: String,
+        required: true,
+        trim: true
+    },
+    required:
+    {
+        type: Boolean,
+        default: false
+    },
+});
+
+
 const categorySchema = new mongoose.Schema({
     name: {
         type: String,
         required: true,
         unique: true,
-        trim: true,
+        trim: true
     },
 
     slug: {
         type: String,
         required: true,
         unique: true,
-        lowercase: true,
+        lowercase: true
     },
 
     description: {
         type: String,
-        default: "",
+        default: ""
     },
 
     image: {
         url: {
             type: String,
-            default: "",
+            default: ""
         },
         public_id: {
             type: String,
-            default: "",
-        }
+            default: ""
+        },
+    },
+
+    attributes: {
+        type: [attributeSchema],
+        default: []
     },
 
     active: {
         type: Boolean,
-        default: true,
-    }
-}, { timestamps: true });
+        default: true
+    },
+},
+    { timestamps: true }
+);
 
 const Category = mongoose.model("Category", categorySchema);
-
 export default Category;

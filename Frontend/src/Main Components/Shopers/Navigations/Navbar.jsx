@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { Heart, ListOrdered, LogOut, Search, ShoppingCart, User } from "lucide-react";
+import { Heart, ListOrdered, LogOut, ShoppingCart, User } from "lucide-react";
 import { toast } from "sonner";
 import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
@@ -11,9 +11,10 @@ import SearchBar from "./SearchBar";
 function Navbar() {
 
   const { isAuthenticated } = useSelector((store) => store.auth);
-
+  const { cart } = useSelector((store) => store.cart);
+  
   return (
-    <nav className="bg-white shadow sticky top-0 z-50">
+    <nav className="bg-[#ffff] shadow sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-5 py-5 flex justify-between items-center">
         <div className="flex items-center gap-6 w-1/2">
           {/* Logo */}
@@ -27,9 +28,21 @@ function Navbar() {
         </div>
 
         <div className="flex gap-6 text-gray-700 font-medium items-center">
-          <Link to="/cart" className="relative flex items-center gap-2 hover:text-indigo-600">
-            <ShoppingCart size={22} />
-            <p>Cart</p>
+
+          <Link
+            to="/cart"
+            className="relative flex items-center gap-2 hover:text-indigo-600"
+          >
+            <div className="relative">
+              <ShoppingCart size={22} />
+
+              {cart?.items?.length > 0 && (
+                <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full">
+                  {cart?.items?.length}
+                </span>
+              )}
+            </div>
+            <span className="capitalize font-medium">Cart</span>
           </Link>
 
           {isAuthenticated ? (

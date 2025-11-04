@@ -6,7 +6,7 @@ import ProductForm from './ProductForm'
 import { useDispatch } from 'react-redux'
 import { addProduct } from '@/Redux/sellerSlice'
 import useUploadImages from '@/Custom Hooks/useUploadImages'
-
+import { StepBack } from 'lucide-react'
 
 
 export const AddNewProduct = () => {
@@ -27,7 +27,9 @@ export const AddNewProduct = () => {
                 brand: formData.brand,
                 category: formData.category,
                 stock: Number(formData.stock),
+                highlights: formData.highlights,
                 description: formData.description,
+                attributes: formData.attributes,
                 images: uploadedImages
             };
 
@@ -50,7 +52,7 @@ export const AddNewProduct = () => {
             <div className="flex justify-between items-center mb-6">
                 <h1 className="text-2xl font-semibold text-gray-800">Add New Product</h1>
                 <Button onClick={() => navigate('/seller/products')} variant="outline">
-                    Back
+                    <StepBack></StepBack>Back
                 </Button>
             </div>
 

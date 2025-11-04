@@ -1,9 +1,18 @@
 import mongoose from "mongoose";
 
 const productSchema = new mongoose.Schema({
+
     name: {
         type: String,
         required: true,
+        trim: true,
+    },
+
+    slug: {
+        type: String,
+        required: true,
+        unique: true,
+        lowercase: true,
     },
 
     category: {
@@ -12,23 +21,23 @@ const productSchema = new mongoose.Schema({
         required: true,
     },
 
-    images: [
-        {
-            url: {
-                type: String,
-                required: true,
-            },
-            public_id: {
-                type: String,
-                required: true,
-            },
-        }
-    ],
+    attributes: {
+        type: Map,
+        of: [String],
+    },
 
     brand: {
         type: String,
-        default: ""
+        required: true,
+        trim: true,
     },
+
+    images: [
+        {
+            url: { type: String, required: true },
+            public_id: { type: String, required: true },
+        },
+    ],
 
     stock: {
         type: Number,
@@ -39,34 +48,60 @@ const productSchema = new mongoose.Schema({
     price: {
         type: Number,
         required: true,
-        min: 0
+        min: 0,
     },
 
     salePrice: {
         type: Number,
-        default: 0
+        default: 0,
+        min: 0,
     },
+
+    highlights: [
+        {
+            type: String,
+            trim: true,
+        },
+    ],
 
     description: {
         type: String,
-        default: ""
+        default: "",
     },
 
     active: {
         type: Boolean,
-        default: true
+        default: true,
+    },
+
+    outOfStock: {
+        type: Boolean,
+        default: false,
     },
 
     seller: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Seller",
-        required: true
+        required: true,
+    },
+
+    offers: {
+        type: String,
     }
 
-}, { timestamps: true });
+},
+    { timestamps: true }
+);
+
+
+productSchema.pre("save", function (next) {
+    this.outOfStock = this.stock <= 0;
+    next();
+});
 
 const Product = mongoose.model("Product", productSchema);
-
 export default Product;
+
+
 
 

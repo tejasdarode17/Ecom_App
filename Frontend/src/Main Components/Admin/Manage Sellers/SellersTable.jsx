@@ -29,6 +29,7 @@ const SellersTable = ({ sellers, showActions = false }) => {
                     <TableBody>
                         {sellers.length > 0 ? (
                             sellers.map((s) => (
+                                // here we can dispatch setSeller(s) right now we are fetching seller information using api 
                                 <TableRow className="pointer" key={s._id} onClick={() => navigate(`/admin/seller/${s._id}`)}>
                                     <TableCell>
                                         {s?.username || "N/A"}

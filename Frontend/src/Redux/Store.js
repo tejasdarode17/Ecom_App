@@ -5,6 +5,7 @@ import sellerSlice from "./sellerSlice"
 import categoriesSlice from "./categoriesSlice"
 import adminSlice from "./adminSlice"
 import bannersSlice from "./bannersSlice"
+import cartSlice from "./cartSlice"
 
 const store = configureStore({
     reducer: {
@@ -13,7 +14,8 @@ const store = configureStore({
         admin: adminSlice,
         product: productsSlice,
         categories: categoriesSlice,
-        banners: bannersSlice
+        banners: bannersSlice,
+        cart: cartSlice
     }
 })
 

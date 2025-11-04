@@ -2,19 +2,19 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 
 
-export const fetchSearchProducts = createAsyncThunk("fetch/products", async (query, { rejectWithValue }) => {
-
+export const fetchSearchProducts = createAsyncThunk("fetch/products", async ({ page = 1, sort = "relevance", query }, { rejectWithValue }) => {
     try {
-        const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/search/suggestions`,
+        const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/search`,
             {
                 params: {
-                    search: query
+                    search: query,
+                    page,
+                    sort,
                 },
                 withCredentials: true
             }
         );
-        console.log(response.data);
-        return response?.data?.products
+        return response?.data
     } catch (error) {
         return rejectWithValue(
             error.response?.data?.message || "Something went wrong on server"
@@ -22,13 +22,15 @@ export const fetchSearchProducts = createAsyncThunk("fetch/products", async (que
     }
 })
 
-
 const productsSlice = createSlice({
     name: "product",
     initialState: {
         loading: false,
         products: [],
         product: {},
+        total: 0,
+        totalPages: 0,
+        currentPage: 1,
         error: null
     },
     reducers: {
@@ -43,8 +45,13 @@ const productsSlice = createSlice({
             state.loading = true
         })
         builder.addCase(fetchSearchProducts.fulfilled, (state, action) => {
-            state.products = action.payload
-        })
+            state.loading = false;
+            state.products = action.payload.products || [];
+            state.total = action.payload.total || 0;
+            state.totalPages = action.payload.totalPages || 0;
+            state.currentPage = action.payload.currentPage || 1;
+            state.error = null;
+        });
         builder.addCase(fetchSearchProducts.rejected, (state, action) => {
             state.loading = false
             state.error = action.payload || "Failed to fetch products"

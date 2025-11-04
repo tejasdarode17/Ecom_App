@@ -6,7 +6,7 @@ const ProductsLayout = () => {
     return (
         <div className="flex w-full h-full mt-2">
 
-            <aside className="w-1/4 p-4 border-r border-gray-200 bg-white sticky top-0 h-screen overflow-y-auto">
+            <aside className="w-1/6 p-4 border-r border-gray-200 bg-white sticky top-0 h-screen overflow-y-auto">
                 <ProductsFilter />
             </aside>
 

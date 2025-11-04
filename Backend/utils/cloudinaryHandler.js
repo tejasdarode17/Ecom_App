@@ -23,20 +23,14 @@ export async function uploadImage(buffer) {
     }
 }
 
-
 export async function deleteImage(publicID) {
     try {
-
-        const result = await cloudinary.uploader.destroy(publicID, {
-            folder: "Ecom",
-            resource_type: "image"
-        })
-        return result
+        const result = await cloudinary.uploader.destroy(publicID);
+        return result;
     } catch (error) {
-        console.log(error);
+        console.error("Cloudinary single delete error:", error);
     }
 }
-
 
 export async function uploadImages(buffers) {
     const uploadSingle = (buffer) =>
