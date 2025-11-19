@@ -14,6 +14,11 @@ const userSchema = new mongoose.Schema({
         unique: true
     },
 
+    phoneNumber: {
+        type: Number,
+        unique: true
+    },
+
     password: {
         type: String,
         required: true,
@@ -53,18 +58,6 @@ const userSchema = new mongoose.Schema({
             ref: "Product"
         }
     ],
-    orders: [
-        {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Product",
-        }
-    ],
-
-    cart: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Cart",
-        default: null
-    }
 
 })
 

@@ -1,31 +1,99 @@
-import { useEffect, useState } from 'react'
-import { useSelector } from 'react-redux'
+import React, { useEffect, useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 import { Navigate, useNavigate, useSearchParams } from 'react-router-dom'
 import { Button } from "@/components/ui/button"
 import { ArrowLeft } from "lucide-react"
 import { CheckCircle } from "lucide-react"
 import { Separator } from "@/components/ui/separator";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import AddAddress from '../Shoper Auth/AddAddress'
-import EditAddress from '../Shoper Auth/EditAddress'
+import AddAddress from '../User Auth/AddAddress'
+import EditAddress from '../User Auth/EditAddress'
+import axios from 'axios'
+import { toast } from 'sonner'
+import { clearCart, clearCheckOut } from '@/Redux/cartSlice'
 
 
 const CheckOut = () => {
 
-    const { isAuthenticated, userAddresses } = useSelector((store) => store.auth)
-    const { cart, chekOut } = useSelector((store) => store.cart)
+    const { isAuthenticated, userAddresses, } = useSelector((store) => store.auth)
+    const { chekOut } = useSelector((store) => store.cart)
     const [selectedAddress, setSelectedAddress] = useState((userAddresses || []).find((a) => a.isDefault === true) || null)
     const [visibleSection, setVisibleSection] = useState(selectedAddress ? "summary" : "address")
-
+    const navigate = useNavigate()
+    const dispatch = useDispatch()
     if (!isAuthenticated) { return <Navigate to="/user/auth/login" replace /> }
-    if (cart?.items?.length === 0 && !chekOut?.items?.length === 0) { return <Navigate to="/cart" replace /> }
+    if (!chekOut) return <Navigate to="/cart" replace />
 
+    console.log(selectedAddress);
+
+    //react error will fix later 
     useEffect(() => {
         const def = userAddresses?.find(a => a.isDefault);
         if (def) {
             setSelectedAddress(def);
         }
     }, [userAddresses]);
+
+
+    async function handlePayment() {
+
+        try {
+            const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/create-order`, {}, {
+                withCredentials: true,
+            });
+            const data = response.data
+
+            const { amount, order } = data;
+
+            const options = {
+                key: import.meta.env.VITE_RAZORPAY_API_KEY_ID,
+                amount: amount,
+                currency: "INR",
+                name: "Trenzzo",
+                description: "Payment",
+                order_id: order.id,
+
+                // prefill: {
+                //     name: userData?.name || "",
+                //     email: user?.email || "",
+                //     contact: user?.phone || ""
+                // },
+
+                handler: async function (response) {
+                    await axios.post(
+                        `${import.meta.env.VITE_BACKEND_URL}/verify-payment`,
+                        {
+                            razorpay_payment_id: response.razorpay_payment_id,
+                            razorpay_order_id: response.razorpay_order_id,
+                            razorpay_signature: response.razorpay_signature,
+                            address: selectedAddress
+                        },
+                        { withCredentials: true }
+                    );
+
+                    toast.success("Payment success ✅");
+                    navigate("/")
+                    dispatch(clearCart())
+                    dispatch(clearCheckOut())
+
+                },
+
+                theme: { color: "#3399cc" },
+            };
+
+            const razor = new window.Razorpay(options);
+
+            razor.on("payment.failed", function (response) {
+                toast.error("Payment failed:" + response.error.description);
+                console.error(response.error);
+            });
+
+            razor.open();
+        } catch (error) {
+            console.log(error);
+            toast.error("Payment Failed due to Server Error")
+        }
+    }
 
 
     return (
@@ -54,10 +122,11 @@ const CheckOut = () => {
                     <CheckoutSummarySection
                         visibleSection={visibleSection}
                         setVisibleSection={setVisibleSection}
+                        handlePayment={handlePayment}
                     />
                 </div>
 
-                <RightOrderSummaryInCheckout />
+                <RightOrderSummaryInCheckout handlePayment={handlePayment} />
             </div>
         </div>
     )
@@ -173,14 +242,13 @@ const CheckoutAddressSection = ({ visibleSection, setVisibleSection, selectedAdd
     );
 };
 
-
-const CheckoutSummarySection = ({ visibleSection, setVisibleSection, }) => {
+const CheckoutSummarySection = ({ visibleSection, setVisibleSection, handlePayment }) => {
 
     const { chekOut } = useSelector((store) => store.cart)
     const { userAddresses } = useSelector((store) => store.auth)
     const [searchParams] = useSearchParams()
     const mode = searchParams.get("mode")
-    const navigate = useNavigate()
+
 
     return (
         <div className="w-[90%] bg-white rounded-md border shadow-sm">
@@ -205,7 +273,7 @@ const CheckoutSummarySection = ({ visibleSection, setVisibleSection, }) => {
                             <div className="flex gap-4 border-b border-gray-100 pb-3">
                                 <img
                                     src={chekOut?.product?.images?.[0]?.url}
-                                    alt={chekOutItems[0]?.product?.name}
+                                    alt={chekOut?.product?.name}
                                     className="w-16 h-16 object-contain"
                                 />
                                 <div className="flex-1">
@@ -216,7 +284,7 @@ const CheckoutSummarySection = ({ visibleSection, setVisibleSection, }) => {
                                         {chekOut?.product?.attributes?.storage} • {chekOut.attributes?.colour}
                                     </p>
                                     <p className="font-semibold mt-1">
-                                        ₹{chekOut?.product?.price?.toLocaleString("en-IN")}
+                                        ₹{chekOut?.itemTotal?.toLocaleString("en-IN")}
                                     </p>
                                 </div>
                             </div>
@@ -236,17 +304,19 @@ const CheckoutSummarySection = ({ visibleSection, setVisibleSection, }) => {
                                             {item?.product?.brand} {item?.product?.name}
                                         </p>
                                         <p className="text-xs text-gray-500">
-                                            {item?.product?.attributes?.storage} • {item?.attributes?.colour}
+                                            {item?.product?.attributes?.storage} • {item?.attributes?.colour} {item?.attributes?.quantity}
                                         </p>
                                         <p className="font-semibold mt-1">
-                                            ₹{item?.product?.price?.toLocaleString("en-IN")}
+                                            ₹{item?.lockedPrice?.toLocaleString("en-IN")} x {item.quantity} = {chekOut?.itemTotal?.toLocaleString("en-IN")}
                                         </p>
                                     </div>
+
+
                                 </div>
                             ))
                         )
                     }
-                    <Button disabled={!userAddresses?.length} onClick={() => navigate()} className="bg-amber-500 hover:bg-amber-600 text-white font-semibold w-full pointer">
+                    <Button disabled={!userAddresses?.length} onClick={handlePayment} className="bg-amber-500 hover:bg-amber-600 text-white font-semibold w-full pointer">
                         Continue to Payment
                     </Button>
                 </div>
@@ -255,14 +325,11 @@ const CheckoutSummarySection = ({ visibleSection, setVisibleSection, }) => {
     )
 }
 
+const RightOrderSummaryInCheckout = ({ handlePayment }) => {
 
-const RightOrderSummaryInCheckout = () => {
     const { chekOut } = useSelector((store) => store.cart);
-    const [searchParams] = useSearchParams()
-    const mode = searchParams.get("mode")
     const { userAddresses } = useSelector((store) => store.auth);
 
-    if (!chekOut || chekOut.items?.length === 0) return null;
 
     return (
         <Card className="w-[350px] sticky top-24 border shadow-md">
@@ -273,14 +340,8 @@ const RightOrderSummaryInCheckout = () => {
             <CardContent className="space-y-3 py-4">
                 {/* Items total */}
                 <div className="flex justify-between text-gray-700 text-sm">
-                    <p>Price ({chekOut?.items?.length} items)</p>
+                    <p>Price ({chekOut?.items?.length || 1} items)</p>
                     <p>₹{chekOut?.itemTotal?.toLocaleString("en-IN")}</p>
-                </div>
-
-                {/* Discount */}
-                <div className="flex justify-between text-green-600 text-sm">
-                    <p>Discount</p>
-                    <p>-₹{0}</p>
                 </div>
 
                 {/* Delivery */}
@@ -295,6 +356,11 @@ const RightOrderSummaryInCheckout = () => {
                     </p>
                 </div>
 
+                <div className="flex justify-between text-gray-700 text-sm">
+                    <p>Platform Fees</p>
+                    <p>₹{chekOut?.platformFees?.toLocaleString("en-IN")}</p>
+                </div>
+
                 <Separator className="my-3" />
 
                 {/* Total */}
@@ -305,13 +371,8 @@ const RightOrderSummaryInCheckout = () => {
 
                 <Separator className="my-3" />
 
-                {/* Savings */}
-                <p className="text-green-600 text-sm">
-                    You will save ₹{0} on this order 🎉
-                </p>
-
                 {/* Button */}
-                <Button disabled={!userAddresses?.length} className="w-full bg-amber-500 hover:bg-amber-600 text-white mt-3 font-semibold pointer">
+                <Button disabled={!userAddresses?.length} onClick={handlePayment} className="w-full bg-amber-500 hover:bg-amber-600 text-white mt-3 font-semibold pointer">
                     PLACE ORDER
                 </Button>
             </CardContent>

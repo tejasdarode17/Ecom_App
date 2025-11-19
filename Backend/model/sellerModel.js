@@ -41,7 +41,20 @@ const sellerSchema = new mongoose.Schema({
             type: mongoose.Schema.Types.ObjectId,
             ref: "Product",
         }
-    ]
+    ],
+
+    razorpayAccountId: {
+        type: String,
+        default: null
+    },
+
+    financialStatus: {
+        type: String,
+        enum: ["created", "active", "inactive", "suspended", "closed"],
+        default: "created"
+    },
+
+
 }, { timestamps: true })
 
 

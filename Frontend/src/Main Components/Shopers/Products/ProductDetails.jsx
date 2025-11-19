@@ -1,10 +1,12 @@
-import { addToCartThunk, setBuyNowItem } from "@/Redux/cartSlice";
+import { addToCartThunk, buyNowThunk } from "@/Redux/cartSlice";
 import { Separator } from "@radix-ui/react-dropdown-menu";
-import React, { useState } from "react";
+import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { ChevronRight, Share2, Heart, Shield, Star, CheckCircle, XCircle, AlertTriangle, ShoppingCart, Zap, Truck, Calendar, FileText, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
+
+//this info should also come from api 
 
 const ProductDetails = () => {
     const { product } = useSelector((store) => store?.product);
@@ -12,7 +14,7 @@ const ProductDetails = () => {
     const dispatch = useDispatch()
     const navigate = useNavigate()
 
-    async function addToCart() {
+    function addToCart() {
         dispatch(addToCartThunk({
             productID: product._id,
             quantity: 1,
@@ -22,13 +24,9 @@ const ProductDetails = () => {
     }
 
     function buyNow() {
-        dispatch(setBuyNowItem({
-            product,
+        dispatch(buyNowThunk({
             productID: product._id,
             quantity: 1,
-            price: product.price,
-            name: product.name,
-            image: product.images?.[0]?.url,
             attributes: product.attributes
         }));
         navigate("/checkout?mode=buynow");

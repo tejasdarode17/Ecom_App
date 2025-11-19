@@ -31,7 +31,7 @@ const productsSlice = createSlice({
         total: 0,
         totalPages: 0,
         currentPage: 1,
-        error: null
+        error: null,
     },
     reducers: {
         setSingleProduct(state, action) {

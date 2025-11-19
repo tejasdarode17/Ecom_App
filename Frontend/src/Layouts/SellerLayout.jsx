@@ -1,4 +1,5 @@
 import SellerSidebar from '@/Main Components/Seller/Seller Navigations/SellerSideBar'
+import { fetchAllCategories } from '@/Redux/categoriesSlice'
 import { fetchAllSellerProducts } from '@/Redux/sellerSlice'
 import React, { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
@@ -10,13 +11,15 @@ const SellerLayout = () => {
     const dispatch = useDispatch();
     const { role } = userData
 
-
     useEffect(() => {
         if (isAuthenticated && role === "seller") {
             dispatch(fetchAllSellerProducts());
         }
     }, [isAuthenticated]);
 
+    useEffect(() => {
+        dispatch(fetchAllCategories())
+    }, [])
 
     return (
         <div className="flex min-h-screen w-full">

@@ -42,7 +42,6 @@ const authSlice = createSlice({
             const addressIndex = state.userAddresses.findIndex((a) => a._id == id)
             state.userAddresses[addressIndex] = address
         }
-
     },
     extraReducers: (builder) => {
         builder

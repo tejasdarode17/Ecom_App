@@ -3,6 +3,7 @@ import dotenv from "dotenv"
 import User from "../model/userModel.js"
 import Seller from "../model/sellerModel.js"
 import Admin from "../model/adminModel.js"
+import DeliveryPartner from "../model/deliveryPartnerModel.js"
 dotenv.config()
 
 
@@ -30,6 +31,19 @@ export function verifyUser(req, res, next) {
     }
 }
 
+//middleware for checking the role of the user this is not using anywhere
+// export function verifyRole(requiredRole) {
+//     return (req, res, next) => {
+//         if (!req.user || req.user.role !== requiredRole) {
+//             return res.status(403).json({
+//                 success: false,
+//                 message: "Access denied"
+//             });
+//         }
+//         next();
+//     };
+// }
+
 
 export async function checkAuth(req, res) {
     try {
@@ -49,6 +63,8 @@ export async function checkAuth(req, res) {
             model = User;
         } else if (authUser.role === "admin") {
             model = Admin;
+        } else if (authUser.role === "deliveryPartner") {
+            model = DeliveryPartner;
         } else {
             return res.status(400).json({
                 success: false,
@@ -70,6 +86,7 @@ export async function checkAuth(req, res) {
             message: "Authenticated user",
             user: userData,
         });
+
 
     } catch (error) {
         console.error(error);

@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button'
-import { setSingleProduct } from '@/Redux/productsSlice'
+import { setSellerSingleProduct, } from '@/Redux/sellerSlice'
 import axios from 'axios'
 import { StepBack } from 'lucide-react'
 import React, { useEffect, } from 'react'
@@ -8,20 +8,22 @@ import { useNavigate, useParams } from 'react-router-dom'
 
 const SellerSingleProduct = () => {
 
-    const { product } = useSelector((store) => store.product)
-    const { id } = useParams()
-    const navigate = useNavigate()
+    const { product } = useSelector((store) => store.seller)
+    const { slug } = useParams();
+    const id = slug?.split("-").pop();
+
     const dispatch = useDispatch()
+    const navigate = useNavigate()
+
 
     async function getSingleProduct() {
-
         try {
             const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/seller/product/${id}`, {
                 withCredentials: true,
             });
             const data = response.data
             console.log(data);
-            dispatch(setSingleProduct(data?.product))
+            dispatch(setSellerSingleProduct(data?.product))
         } catch (error) {
             console.log(error);
         }
@@ -29,7 +31,7 @@ const SellerSingleProduct = () => {
 
     useEffect(() => {
         getSingleProduct()
-    }, [id])
+    }, [slug])
 
 
     return (
@@ -71,7 +73,7 @@ const SellerSingleProduct = () => {
                         <div className="flex gap-4 mt-4">
                             <Button
                                 variant="outline"
-                                onClick={() => navigate(`/seller/edit-product/${product._id}`)}
+                                onClick={() => navigate(`/seller/edit-product/${product?.slug}`)}
                                 className="w-25"
                             >
                                 Edit

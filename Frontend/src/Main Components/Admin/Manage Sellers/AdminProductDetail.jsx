@@ -21,7 +21,7 @@ const AdminProductDetail = () => {
                     </CardHeader>
                     <CardContent className="flex justify-center">
                         <img
-                            src={product.image.url}
+                            src={product.images[0].url}
                             alt={product.name}
                             className="h-64 w-auto rounded"
                         />

@@ -11,24 +11,36 @@ const ProtectedRoutes = ({ children }) => {
     const location = useLocation()
     const path = location.pathname
 
-
+    //if not login and try to acces the main pages
     if (!isAuthenticated) {
         if (path.startsWith("/seller") && !path.startsWith("/seller/auth")) {
             return <Navigate to="/seller/auth/login" replace />;
+        }
+        if (path.startsWith("/delivery") && !path.startsWith("/delivery/auth")) {
+            return <Navigate to="/delivery/auth/login" replace />;
         }
         if (path.startsWith("/admin")) {
             return <Navigate to="/" replace />;
         }
     }
 
+    // if seller is login and try to access the any auth pages again
     if (role === "seller") {
-        if (path.startsWith("/seller/auth") || path.startsWith("/user/auth") || path === "/") {
+        if (path.startsWith("/seller/auth") || path.startsWith("/user/auth") || path.startsWith("/delivery/auth") || path === "/") {
             return <Navigate to="/seller" replace />;
         }
     }
 
+    // if deliveryPartner is login and try to access the nay auth pages again
+    if (role === "deliveryPartner") {
+        if (path.startsWith("/delivery/auth") || path.startsWith("/user/auth") || path.startsWith("/seller/auth") || path === "/") {
+            return <Navigate to="/delivery" replace />;
+        }
+    }
+
+
     if (role === "user") {
-        if (path.startsWith("/seller") || path.startsWith("/user/auth") || path.startsWith("/admin")) {
+        if (path.startsWith("/seller") || path.startsWith("/user/auth") || path.startsWith("/admin") || path.startsWith("/delivery")) {
             return <Navigate to="/" replace />;
         }
     }

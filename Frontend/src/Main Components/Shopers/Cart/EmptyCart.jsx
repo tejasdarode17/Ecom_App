@@ -7,8 +7,8 @@ const EmptyCart = () => {
     const navigate = useNavigate();
 
     return (
-        <>
-            <div className="bg-white max-w-md w-full mx-auto my-24 flex flex-col items-center justify-center gap-4 rounded-2xl shadow-md p-8 text-center border">
+        <div className="flex flex-col">
+            <div className="bg-white  max-w-md w-full mx-auto my-24 flex flex-col flex-1 items-center justify-center gap-4 rounded-2xl shadow-md p-8 text-center border">
                 <div className="bg-[#F1F3F6] p-4 rounded-full">
                     <ShoppingBag className="w-10 h-10 text-gray-600" />
                 </div>
@@ -31,7 +31,7 @@ const EmptyCart = () => {
 
 
             <CartFooter></CartFooter>
-        </>
+        </div>
     );
 };
 

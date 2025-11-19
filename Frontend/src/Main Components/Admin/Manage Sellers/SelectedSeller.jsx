@@ -21,8 +21,7 @@ const SelectedSeller = () => {
     async function fetchSelectedSeller() {
         try {
             setLoading(true)
-            const response = await axios.get(
-                `${import.meta.env.VITE_BACKEND_URL}/admin/seller/${id}`,
+            const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/admin/seller/${id}`,
                 { withCredentials: true }
             );
             dispatch(setSeller(response?.data?.seller));
@@ -36,6 +35,7 @@ const SelectedSeller = () => {
     useEffect(() => {
         fetchSelectedSeller();
     }, [id]);
+
 
     if (loading) return <p className="p-6">Loading seller...</p>;
     if (!seller) return <p className="p-6">Seller not found</p>;

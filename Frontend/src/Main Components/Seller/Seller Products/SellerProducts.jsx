@@ -14,7 +14,6 @@ const SellerProducts = () => {
     if (["pending", "banned", "rejected", "suspended"].includes(userData?.status)) {
         return <AccessDenied status={userData?.status} />
     }
-
     return (
         <div className="w-full p-6 min-h-screen">
             <div>

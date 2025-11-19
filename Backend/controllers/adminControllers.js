@@ -7,6 +7,7 @@ import { deleteImage } from "../utils/cloudinaryHandler.js";
 import deleteProductsByCategory from "../utils/deleteCategoriesProduct.js";
 import Carousel from "../model/carouselModel.js";
 import Bannner from "../model/bannerModel.js";
+import Order from "../model/orderModel.js";
 
 async function createAdmin(req, res) {
 
@@ -200,9 +201,9 @@ export async function deleteCatogery(req, res) {
 export async function getAllSellers(req, res) {
     try {
         const adminID = req.user.id;
-        const admin = await Admin.findById(adminID);
         const { status, page, limit } = req.query;
 
+        const admin = await Admin.findById(adminID);
         if (!admin || admin.role !== "admin") {
             return res.status(403).json({ success: false, message: "You are not authorized" });
         }
@@ -305,7 +306,6 @@ export async function changeSellerStatus(req, res) {
         })
     }
 }
-
 
 //-----------------Carousel controllers----------------------------
 
@@ -585,3 +585,48 @@ export async function deleteBanner(req, res) {
 
 
 
+//-----------------Admin Manage Orders----------------------------
+
+async function adminFetchAllOrders(req, res) {
+
+    try {
+        const adminID = req.user.id
+        const { page = 1 } = req.params
+
+        const admin = await Admin.findById(adminID);
+        if (!admin || admin.role !== "admin") {
+            return res.status(403).json({ success: false, message: "You are not authorized" });
+        }
+
+        page = parseInt(page);
+        const limit = 10
+        const skip = (page - 1) * limit;
+
+        const orders = await Order.find({})
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit)
+            .populate("customer", "username email")
+            .populate("items.product", "name images")
+            .populate("items.seller", "username")
+
+        if (!orders) {
+            return res.status(404).json({ success: false, message: "Orders not found" });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Sellers fetched successfully",
+            orders,
+            total,
+            page: Number(page),
+        });
+
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: "Server error",
+            error: error.message,
+        });
+    }
+}

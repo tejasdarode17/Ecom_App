@@ -25,9 +25,9 @@ const ProductsTable = ({ products, role }) => {
             <ScrollArea className="h-[600px]">
                 {products.map((product) => (
                     <Link
-                        to={`/${role}/product/${product._id}`}
+                        to={`/${role}/product/${product?.slug}`}
                         state={{ product }}
-                        key={product._id}
+                        key={product?._id}
                     >
                         <div className="grid grid-cols-7 items-center text-sm px-6 py-4 border-b hover:bg-gray-50 gap-2">
                             {/* Product Name */}

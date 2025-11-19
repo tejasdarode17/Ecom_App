@@ -22,6 +22,9 @@ export const fetchAllSellers = createAsyncThunk("fetch/seller", async ({ status,
     }
 })
 
+export const fetchAllOrders = createAsyncThunk("fetch/orders",)
+
+
 const adminSlice = createSlice({
     name: "admin",
     initialState: {

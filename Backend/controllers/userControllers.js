@@ -1,4 +1,5 @@
 import Cart from "../model/cartModel.js";
+import Order from "../model/orderModel.js";
 import Product from "../model/productModel.js";
 import User from "../model/userModel.js";
 
@@ -274,6 +275,37 @@ export async function addCart(req, res) {
     }
 }
 
+
+export async function deleteCart(req, res) {
+    try {
+        const userID = req.user.id;
+
+        const cart = await Cart.findOne({ user: userID });
+
+        if (!cart) {
+            return res.status(404).json({
+                success: false,
+                message: "Cart not found",
+            });
+        }
+
+        await cart.deleteOne();
+
+        return res.status(200).json({
+            success: true,
+            message: "Cart deleted successfully",
+        });
+
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: "Server error",
+            error: error.message,
+        });
+    }
+}
+
+
 export async function fetchCart(req, res) {
     try {
         const userID = req.user.id;
@@ -304,11 +336,13 @@ export async function fetchCart(req, res) {
                 item.unavailable = true;
                 item.stockIssue = true;
                 item.lockedPrice = null;
+                cart.issues = true
                 return;
             }
 
             item.unavailable = false;
             item.stockIssue = false;
+            cart.issues = false
 
         });
 
@@ -341,7 +375,6 @@ export async function fetchCart(req, res) {
 export async function checkOut(req, res) {
     try {
         const userID = req.user.id;
-
         const user = await User.findById(userID);
         if (!user) return res.status(404).json({ message: "User not found" });
 
@@ -381,7 +414,6 @@ export async function checkOut(req, res) {
             return res.status(400).json({
                 success: false,
                 message: "Some items need your attention",
-                items: cart.items,
             });
         }
 
@@ -427,22 +459,29 @@ export async function buyNow(req, res) {
         }
 
         const lockedPrice = product.salePrice > 0 ? product.salePrice : product.price;
+        const total = lockedPrice * quantity
+        let platformFees = 100
+        let deliveryFees = total > 500 ? 0 : 50
+        let finalPayable = total + platformFees + deliveryFees
 
         const buyNowItem = {
             productID: product._id,
+            product,
             name: product.name,
             image: product.images[0]?.url,
             brand: product.brand,
             attributes,
-            lockedPrice,
+            itemTotal: lockedPrice,
+            deliveryFees,
+            platformFees,
             quantity,
-            total: lockedPrice * quantity
+            finalPayable
         };
-        
+
         return res.status(200).json({
             success: true,
-            item: buyNowItem,
             message: "Buy now item ready",
+            item: buyNowItem,
         });
 
     } catch (error) {
@@ -453,3 +492,32 @@ export async function buyNow(req, res) {
         });
     }
 }
+
+
+export async function getAllOrders(req, res) {
+
+    try {
+        const userID = req.user.id
+
+        const orders = await Order.find({ customer: userID })
+            .populate("items.product")
+            .sort({ createdAt: -1 });
+
+        return res.status(200).json({
+            success: true,
+            message: "orders fetched",
+            orders
+        });
+
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: "Server error",
+            error: error.message,
+        });
+    }
+
+
+}
+
+

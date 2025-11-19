@@ -35,6 +35,23 @@ export const addToCartThunk = createAsyncThunk("add-cart", async ({ productID, q
 
 
 
+
+export const buyNowThunk = createAsyncThunk("buy-now", async ({ productID, quantity, attributes }, { rejectWithValue }) => {
+    try {
+        const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/buy-now`,
+            { productID, quantity, attributes },
+            { withCredentials: true, }
+        )
+        console.log(response.data);
+        return response.data.item
+    } catch (error) {
+        console.log(error);
+        return rejectWithValue(
+            error.response?.data?.message || "Something went wrong on server"
+        );
+    }
+})
+
 export const checkOut = createAsyncThunk("checkout", async (_, { rejectWithValue }) => {
     try {
         const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/checkout`, {
@@ -51,10 +68,6 @@ export const checkOut = createAsyncThunk("checkout", async (_, { rejectWithValue
 })
 
 
-
-
-
-
 const cartSllice = createSlice({
     name: "cart",
     initialState: {
@@ -63,13 +76,12 @@ const cartSllice = createSlice({
         chekOut: {}
     },
     reducers: {
-        setBuyNowItem(state, action) {
-            state.buyNowItem = action.payload
+        clearCart(state) {
+            state.cart = {}
         },
-        clearBuyNowItem(state) {
-            state.buyNowItem = {}
+        clearCheckOut(state) {
+            state.chekOut = {}
         }
-
     },
     extraReducers: (builder) => {
         builder
@@ -106,12 +118,23 @@ const cartSllice = createSlice({
             .addCase(checkOut.rejected, (state) => {
                 state.loading = false;
             })
+        builder
+            .addCase(buyNowThunk.pending, (state) => {
+                state.loading = true
+            })
+            .addCase(buyNowThunk.fulfilled, (state, action) => {
+                state.loading = false
+                state.chekOut = action.payload
+            })
+            .addCase(buyNowThunk.rejected, (state) => {
+                state.loading = false;
+            })
     }
 
 })
 
 
-export const { setBuyNowItem, clearBuyNowItem } = cartSllice.actions
+export const { clearCart, clearCheckOut } = cartSllice.actions
 export default cartSllice.reducer
 
 

@@ -2,8 +2,8 @@ import AuthLayout from "./Layouts/AuthLayout"
 import AdminLayout from "./Layouts/AdminLayout"
 import ShopersLayout from "./Layouts/ShopersLayout"
 import { createBrowserRouter, RouterProvider } from "react-router-dom"
-import Login from "./Main Components/Shopers/Shoper Auth/UserLogin"
-import Register from "./Main Components/Shopers/Shoper Auth/UserRegister"
+import Login from "./Main Components/Shopers/User Auth/UserLogin"
+import Register from "./Main Components/Shopers/User Auth/UserRegister"
 import Home from "./Main Components/Shopers/Home"
 import { useDispatch } from "react-redux"
 import SellerAuthLayout from "./Layouts/SellerAuthLayout"
@@ -21,12 +21,10 @@ import SellerProducts from "./Main Components/Seller/Seller Products/SellerProdu
 import SellerSingleProduct from "./Main Components/Seller/Seller Products/SellerSingleProduct"
 import AdminDashboard from "./Main Components/Admin/Admin Dashboard/AdminDashboard"
 import AdminCategory from "./Main Components/Admin/Admin Categories/AdminCategory"
-import { fetchAllCategories } from "./Redux/categoriesSlice"
 import AdminSellers from "./Main Components/Admin/Manage Sellers/AdminSeller"
 import SelectedSeller from "./Main Components/Admin/Manage Sellers/SelectedSeller"
-import AdminProductDetail from "./Main Components/Admin/AdminProductDetail"
+import AdminProductDetail from "./Main Components/Admin/Manage Sellers/AdminProductDetail"
 import PendingSeller from "./Main Components/Admin/Manage Sellers/PendingSeller"
-import { fetchAllBanners, fetchAllCarousels } from "./Redux/bannersSlice"
 import AdminBanners from "./Main Components/Admin/Banners/AdminBanners"
 import ProductsLayout from "./Main Components/Shopers/Products/ProductsLayout"
 import ProductDetails from "./Main Components/Shopers/Products/ProductDetails"
@@ -34,7 +32,17 @@ import AddCategory from "./Main Components/Admin/Admin Categories/AddCategory"
 import EditCategory from "./Main Components/Admin/Admin Categories/EditCategory"
 import Cart from "./Main Components/Shopers/Cart/Cart"
 import CheckOut from "./Main Components/Shopers/Cart/CheckOut"
-import { fetchCartThunk } from "./Redux/cartSlice"
+import SellerOrders from "./Main Components/Seller/Seller Orders/SellerOrders"
+import Orders from "./Main Components/Shopers/User Orders/Orders"
+import SellerOrderDetails from "./Main Components/Seller/Seller Orders/SellerOrderDetails"
+import OrderDetails from "./Main Components/Shopers/User Orders/OrderDetails"
+import AdminOrders from "./Main Components/Admin/Admin Orders/AdminOrders"
+import DeliveryAuthLayout from "./Layouts/DeliveryAuthLayout"
+import DeliveryLogin from "./Main Components/DeliveryPartner/Delivery Auth/DeliveryLogin"
+import DeliveryRegistration from "./Main Components/DeliveryPartner/Delivery Auth/DeliveryRegistration"
+import DeliveryLayout from "./Layouts/DeliveryLayout"
+import DeliveryDashboard from "./Main Components/DeliveryPartner/DeliveryDashboard"
+import DeliveryOrders from "./Main Components/DeliveryPartner/DeliveryOrders"
 
 
 const appRouter = createBrowserRouter([
@@ -77,6 +85,25 @@ const appRouter = createBrowserRouter([
   },
 
   {
+    path: "/delivery/auth",
+    element: (
+      <ProtectedRoutes>
+        <DeliveryAuthLayout></DeliveryAuthLayout>
+      </ProtectedRoutes>
+    ),
+    children: [
+      {
+        path: "register",
+        element: <DeliveryRegistration></DeliveryRegistration>
+      },
+      {
+        path: "login",
+        element: <DeliveryLogin></DeliveryLogin>
+      }
+    ]
+  },
+
+  {
     path: "/",
     element: (
       <ProtectedRoutes>
@@ -104,6 +131,14 @@ const appRouter = createBrowserRouter([
         path: "/checkout",
         element: <CheckOut></CheckOut>
       },
+      {
+        path: "/orders",
+        element: <Orders></Orders>
+      },
+      {
+        path: "/order/:id",
+        element: <OrderDetails></OrderDetails>
+      }
     ]
   },
 
@@ -128,12 +163,20 @@ const appRouter = createBrowserRouter([
         element: <AddNewProduct></AddNewProduct>
       },
       {
-        path: "edit-product/:id",
+        path: "edit-product/:slug",
         element: <EditProduct></EditProduct>
       },
       {
-        path: "product/:id",
+        path: "product/:slug",
         element: <SellerSingleProduct></SellerSingleProduct>
+      },
+      {
+        path: "orders",
+        element: <SellerOrders></SellerOrders>
+      },
+      {
+        path: "order/:id",
+        element: <SellerOrderDetails></SellerOrderDetails>
       }
     ]
   },
@@ -181,10 +224,32 @@ const appRouter = createBrowserRouter([
       {
         path: "banners",
         element: <AdminBanners></AdminBanners>
+      },
+      {
+        path: "orders",
+        element: <AdminOrders></AdminOrders>
       }
     ]
   },
 
+  {
+    path: "/delivery",
+    element: (
+      <ProtectedRoutes>
+        <DeliveryLayout></DeliveryLayout>
+      </ProtectedRoutes>
+    ),
+    children: [
+      {
+        index: true,
+        element: <DeliveryDashboard></DeliveryDashboard>
+      },
+      {
+        path: "orders",
+        element: <DeliveryOrders></DeliveryOrders>
+      }
+    ]
+  },
   {
     path: "*",
     element: <ErrorPage />
@@ -195,14 +260,8 @@ const appRouter = createBrowserRouter([
 function App() {
 
   const dispatch = useDispatch();
-
   useEffect(() => {
     dispatch(checkAuth());
-    dispatch(fetchAllCategories())
-    dispatch(fetchAllCarousels())
-    dispatch(fetchAllBanners())
-    dispatch(fetchCartThunk())
-
   }, []);
 
   return (

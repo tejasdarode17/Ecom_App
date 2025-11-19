@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
 import { CloudUpload, Loader2, X } from "lucide-react";
 
-export default function ProductForm({ initialData = {}, onSubmit, loading }) {
+const ProductForm = ({ initialData = {}, onSubmit, loading }) => {
+
     const { categories } = useSelector((store) => store.categories);
 
     const normalizedData = useMemo(() => ({
@@ -21,6 +22,7 @@ export default function ProductForm({ initialData = {}, onSubmit, loading }) {
         highlights: initialData.highlights || [],
     }), []);
 
+    const isEditMode = Boolean(initialData?._id);
     const [formData, setFormData] = useState(normalizedData);
     const [productImages, setProductImages] = useState(initialData.images || []);
 
@@ -69,7 +71,7 @@ export default function ProductForm({ initialData = {}, onSubmit, loading }) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="flex flex-col gap-2">
                     <Label>Category</Label>
-                    <Select value={formData.category} onValueChange={handleCategoryChange} required>
+                    <Select value={formData.category} onValueChange={handleCategoryChange} disabled={isEditMode} required>
                         <SelectTrigger><SelectValue placeholder="Select a category" /></SelectTrigger>
                         <SelectContent>
                             {categories.map((cat) => <SelectItem key={cat._id} value={cat._id}>{cat.name}</SelectItem>)}
@@ -171,7 +173,10 @@ export default function ProductForm({ initialData = {}, onSubmit, loading }) {
     );
 }
 
-function ListInput({ value = [], onChange, placeholder }) {
+
+
+
+const ListInput = ({ value = [], onChange, placeholder }) => {
     const [input, setInput] = useState("");
 
     const handleAdd = (e) => {
@@ -207,3 +212,6 @@ function ListInput({ value = [], onChange, placeholder }) {
         </div>
     );
 }
+
+
+export default ProductForm

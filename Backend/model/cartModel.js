@@ -50,6 +50,7 @@ const cartSchema = new mongoose.Schema(
             },
         ],
 
+        issues: { type: Boolean, default: false },
         itemTotal: { type: Number, default: 0, required: true },
         platformFees: { type: Number, default: 0, required: true },
         deliveryFees: { type: Number, default: 0, required: true },

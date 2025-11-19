@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import axios from "axios";
 import { toast } from "sonner";
 import { useDispatch } from "react-redux";
-import { ChartNoAxesCombined, LayoutDashboard, LogOut, Menu, Settings } from "lucide-react";
+import { ChartNoAxesCombined, LayoutDashboard, LogOut, Menu, } from "lucide-react";
 import { useState } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { clearUser } from "@/Redux/authSlice";
@@ -20,7 +20,7 @@ const AdminSidebar = () => {
             {/* Desktop Sidebar */}
             <div className="hidden lg:flex flex-col w-64 min-h-screen bg-white text-gray-800 border-r border-gray-200 shadow-none">
                 <div
-                    onClick={() => navigate("/seller")}
+                    onClick={() => navigate("/admin")}
                     className="flex gap-2 items-center px-6 py-5 text-xl font-semibold border-b border-gray-100 cursor-pointer"
                 >
                     <ChartNoAxesCombined className="text-blue-600" />
@@ -38,7 +38,7 @@ const AdminSidebar = () => {
                     <SheetContent side="left" className="w-64">
                         <SheetHeader>
                             <SheetTitle
-                                onClick={() => navigate("/seller")}
+                                onClick={() => navigate("/admin")}
                                 className="flex gap-2 items-center mt-2"
                             >
                                 <ChartNoAxesCombined />
@@ -73,11 +73,11 @@ const SideBarMenu = ({ setOpenSheet }) => {
 
     const items = [
         { id: 1, name: "Dashboard", icon: <LayoutDashboard />, path: "/admin" },
-        { id: 3, name: "Categories", icon: <FaClipboardList />, path: "/admin/category" },
+        { id: 4, name: "Orders", icon: <FaClipboardList />, path: "/admin/orders" },
         { id: 6, name: "Sellers", icon: <FaClipboardList />, path: "/admin/sellers" },
+        { id: 3, name: "Categories", icon: <FaClipboardList />, path: "/admin/category" },
         { id: 7, name: "Banners", icon: <FaClipboardList />, path: "/admin/banners" },
         // { id: 2, name: "Products", icon: <FaBoxOpen />, path: "/admin/products" },
-        // { id: 4, name: "Orders", icon: <FaClipboardList />, path: "/admin/orders" },
         // { id: 5, name: "Users", icon: <FaClipboardList />, path: "/admin/users" },
         // { id: 8, name: "Reports", icon: <FaClipboardList />, path: "/admin/reports" },
         // { id: 9, name: "Settings", icon: <Settings />, path: "/admin/settings" },

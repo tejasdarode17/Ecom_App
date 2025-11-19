@@ -11,10 +11,11 @@ import { StepBack } from 'lucide-react';
 const EditProduct = () => {
 
     const [loading, setLoading] = useState(false)
-    const { product } = useSelector((store) => store.product)
+    const { product } = useSelector((store) => store.seller)
     const navigate = useNavigate()
     const dispatch = useDispatch()
-    const { id } = useParams()
+    const { slug } = useParams();
+    const id = slug?.split("-").pop();
 
     const { uploadImagesToServer } = useUploadImages()
 
@@ -37,7 +38,6 @@ const EditProduct = () => {
                 name: formData.name,
                 price: Number(formData.price),
                 brand: formData.brand,
-                category: formData.category,
                 stock: Number(formData.stock),
                 highlights: formData.highlights,
                 description: formData.description,
@@ -84,7 +84,3 @@ const EditProduct = () => {
 
 export default EditProduct
 
-
-
-
-//new product add karke images wdit karke dekhna hai aur uske bad images[0] wala issue solve karna hai 

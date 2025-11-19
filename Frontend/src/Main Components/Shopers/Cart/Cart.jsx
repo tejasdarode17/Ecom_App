@@ -1,11 +1,12 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { addToCartThunk, checkOut } from "@/Redux/cartSlice";
+import { addToCartThunk, checkOut, clearCart } from "@/Redux/cartSlice";
 import { useDispatch, useSelector } from "react-redux";
 import EmptyCart from "./EmptyCart";
 import CartFooter from "./CartFooter";
 import { Minus, Plus, Trash2, ShoppingCart, ArrowLeft, CheckCircle, AlertTriangle, Receipt, Truck, Sparkles, Shield } from "lucide-react";
 import { Navigate, useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const Cart = () => {
   const { cart } = useSelector((store) => store.cart);
@@ -21,10 +22,28 @@ const Cart = () => {
     navigate("/checkout")
   }
 
-  return (
-    <div>
 
-      <div className="max-w-6xl mx-auto mt-6 flex flex-col lg:flex-row gap-6 px-4">
+
+  async function deleteCart() {
+    try {
+      const response = await axios.delete(`${import.meta.env.VITE_BACKEND_URL}/delete-cart`,
+        { withCredentials: true, }
+      )
+      if (response.data.success) {
+        dispatch(clearCart())
+      }
+    } catch (error) {
+      console.log(error);
+      return rejectWithValue(
+        error.response?.data?.message || "Something went wrong on server"
+      );
+    }
+  }
+
+
+  return (
+    <div className="flex flex-col">
+      <div className="max-w-6xl mx-auto mt-6 flex flex-col flex-1 lg:flex-row gap-6 px-4">
         {/* Left Side – Cart Items */}
         <div className="flex-1">
           <div className="bg-white shadow-lg rounded-xl overflow-hidden border border-gray-100">
@@ -38,7 +57,7 @@ const Cart = () => {
               </div>
               {cart?.items?.length > 0 && (
                 <Button
-                  // onClick={() => dispatch(clearCart())}
+                  onClick={() => deleteCart()}
                   variant="outline"
                   className="text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700"
                 >
@@ -137,11 +156,11 @@ const Cart = () => {
                         {/* Price and Remove */}
                         <div className="text-right flex flex-col items-end gap-3">
                           <p className="font-bold text-xl text-gray-900">
-                            ₹{(p?.priceAtTheTime * p?.quantity).toLocaleString("en-IN")}
+                            ₹{(p?.product.price * p?.quantity).toLocaleString("en-IN")}
                           </p>
                           {p.quantity > 1 && (
                             <p className="text-sm text-gray-500">
-                              ₹{p?.priceAtTheTime?.toLocaleString("en-IN")} each
+                              ₹{p?.product.price?.toLocaleString("en-IN")} each
                             </p>
                           )}
                           <Button
@@ -174,7 +193,7 @@ const Cart = () => {
                 <p className="text-gray-600 font-medium">
                   Total: <span className="text-lg font-bold text-gray-900 ml-2">₹{cart?.totalAmmount?.toLocaleString("en-IN")}</span>
                 </p>
-                <Button onClick={() => placeOrder()} className="bg-amber-500 hover:bg-amber-600 text-white font-semibold px-8 py-2.5 shadow-lg hover:shadow-xl transition-all duration-200 min-w-[180px]">
+                <Button disabled={cart?.issues} onClick={() => placeOrder()} className="bg-amber-500 hover:bg-amber-600 text-white font-semibold px-8 py-2.5 shadow-lg hover:shadow-xl transition-all duration-200 min-w-[180px]">
                   <ShoppingCart className="w-5 h-5 mr-2" />
                   Place Order
                 </Button>
@@ -215,10 +234,19 @@ const Cart = () => {
 
               <div className="flex justify-between items-center py-2 border-b border-gray-200 pb-4">
                 <p className="text-gray-600">Delivery Charges</p>
-                <p className="text-green-600 font-medium flex items-center gap-1">
-                  <Truck className="w-4 h-4" />
-                  Free
-                </p>
+                {
+                  cart.deliveryFees > 0 ? (
+                    <p className="text-green-600 font-medium flex items-center gap-1">
+                      <Truck className="w-4 h-4" />
+                      {cart?.deliveryFees}
+                    </p>
+                  ) : (
+                    <p className="text-green-600 font-medium flex items-center gap-1">
+                      <Truck className="w-4 h-4" />
+                      Free
+                    </p>
+                  )
+                }
               </div>
 
               <div className="flex justify-between items-center pt-4 border-t border-gray-200">
@@ -249,7 +277,7 @@ const Cart = () => {
       </div>
 
       <CartFooter />
-    </div>
+    </div >
 
   );
 };

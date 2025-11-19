@@ -1,7 +1,7 @@
 import express from "express";
 
 
-import { loginSeller, loginUser, logout, registerSeller, registerUser } from "../../controllers/Auth Controllers/authControllers.js";
+import { loginDeliveryPartner, loginSeller, loginUser, logout, registerDeliveryPartner, registerSeller, registerUser } from "../../controllers/Auth Controllers/authControllers.js";
 import { checkAuth, verifyUser } from "../../middlewares/auth.js";
 
 const route = express.Router()
@@ -17,6 +17,9 @@ route.post("/user/login", loginUser)
 route.post("/seller/register", registerSeller)
 route.post("/seller/login", loginSeller)
 
+//delivery partner
+route.post("/delivery/register", registerDeliveryPartner)
+route.post("/delivery/login", loginDeliveryPartner)
 
 //common routes 
 route.post("/user/logout", logout)

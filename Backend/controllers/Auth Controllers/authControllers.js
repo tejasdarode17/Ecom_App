@@ -3,6 +3,7 @@ import Seller from "../../model/sellerModel.js";
 import bcrypt from "bcrypt"
 import { genrateToken } from "../../utils/genrateToken.js";
 import Admin from "../../model/adminModel.js";
+import DeliveryPartner from "../../model/deliveryPartnerModel.js";
 
 
 //user (shopper)
@@ -233,6 +234,124 @@ export async function loginSeller(req, res) {
     }
 
 }
+
+export async function registerDeliveryPartner(req, res) {
+    try {
+        const { name, email, password, phone, vehicle } = req.body;
+
+        if (!name || !email || !password) {
+            return res.status(400).json({
+                success: false,
+                message: "All fields are required"
+            });
+        }
+
+        const existingPartner = await DeliveryPartner.findOne({ email });
+
+        if (existingPartner) {
+            return res.status(400).json({
+                success: false,
+                message: "This email is already registered by another delivery partner"
+            });
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        const newPartner = await DeliveryPartner.create({
+            username: name,
+            email,
+            phone: phone,
+            vehicleType: vehicle,
+            password: hashedPassword
+        });
+
+        const accessToken = genrateToken({
+            id: newPartner._id,
+            role: newPartner.role,
+            email: newPartner.email
+        });
+
+        res.cookie("accessToken", accessToken, {
+            httpOnly: true,
+            secure: false,
+            sameSite: "Lax",
+            path: "/"
+        });
+
+        return res.status(200).json({
+            success: true,
+            message: "Delivery Partner registered successfully",
+            user: newPartner
+        });
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            success: false,
+            message: "Server error",
+            error: error.message
+        });
+    }
+}
+
+
+export async function loginDeliveryPartner(req, res) {
+    try {
+        const { email, password } = req.body;
+
+        if (!email || !password) {
+            return res.status(400).json({
+                success: false,
+                message: "All fields are required"
+            });
+        }
+
+        const partner = await DeliveryPartner.findOne({ email });
+
+        if (!partner) {
+            return res.status(400).json({
+                success: false,
+                message: "Delivery partner does not exist with this email"
+            });
+        }
+
+        const isMatch = await bcrypt.compare(password, partner.password);
+        if (!isMatch) {
+            return res.status(401).json({
+                success: false,
+                message: "Invalid email or password"
+            });
+        }
+
+        const accessToken = genrateToken({
+            id: partner._id,
+            role: partner.role,
+            email: partner.email
+        });
+
+        res.cookie("accessToken", accessToken, {
+            httpOnly: true,
+            secure: false,
+            sameSite: "Lax",
+            path: "/"
+        });
+
+        return res.status(200).json({
+            success: true,
+            message: "Delivery partner logged in successfully",
+            user: partner
+        });
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            success: false,
+            message: "Server error",
+            error: error.message
+        });
+    }
+}
+
 
 
 

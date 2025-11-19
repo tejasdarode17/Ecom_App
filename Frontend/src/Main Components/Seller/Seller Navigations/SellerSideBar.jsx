@@ -30,7 +30,7 @@ const SellerSidebar = () => {
                 <SideBarMenu />
             </div>
 
-            {/* Mobile Sidebar (optional if used here) */}
+            {/* Mobile Sidebar */}
             <div className="lg:hidden">
                 <Sheet open={openSheet} onOpenChange={setOpenSheet}>
                     <SheetTrigger asChild>
