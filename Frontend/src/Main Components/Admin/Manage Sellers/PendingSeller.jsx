@@ -4,7 +4,6 @@ import { useSelector } from 'react-redux'
 
 export const PendingSeller = () => {
 
-
     const { sellersByStatus } = useSelector((store) => store.admin)
     const pendingSellers = sellersByStatus?.pending?.data
 

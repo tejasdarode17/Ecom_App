@@ -12,7 +12,6 @@ export const fetchOrders = createAsyncThunk("fetch-orders", async (_, { rejectWi
             error.response?.data?.message || "Something went wrong on server"
         );
     }
-
 })
 
 const userSlice = createSlice({

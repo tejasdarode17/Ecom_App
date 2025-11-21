@@ -1,13 +1,13 @@
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Link, useLocation } from "react-router-dom";
+import { Link } from "react-router-dom";
 import ProductsActionButton from './ProductsActionButtons';
 
-//this component is used in seller as well as admin to view products 
 
-const ProductsTable = ({ products, role }) => {
-    const location = useLocation();
-    const path = location.pathname;
+const ProductsTable = ({ products, productsLoading }) => {
+
+    if (productsLoading) return <p>Loading...</p>;
+
     return (
         <>
             {/* Table Header */}
@@ -18,17 +18,13 @@ const ProductsTable = ({ products, role }) => {
                 <span className="text-left">Stock</span>
                 <span className="text-left">Price</span>
                 <span className="text-left">Status</span>
-                {path.startsWith("/seller") && <span className="text-center">Action</span>}
+                <span className="text-center">Action</span>
             </div>
 
             {/* Scrollable Body */}
             <ScrollArea className="h-[600px]">
-                {products.map((product) => (
-                    <Link
-                        to={`/${role}/product/${product?.slug}`}
-                        state={{ product }}
-                        key={product?._id}
-                    >
+                {(products || [])?.map((product) => (
+                    <Link to={`/seller/product/${product?.slug}`} key={product?._id}>
                         <div className="grid grid-cols-7 items-center text-sm px-6 py-4 border-b hover:bg-gray-50 gap-2">
                             {/* Product Name */}
                             <span className="font-medium">{product?.name}</span>
@@ -47,15 +43,7 @@ const ProductsTable = ({ products, role }) => {
                             <span className="text-gray-600">{product?.category?.name}</span>
 
                             {/* Stock */}
-                            <span
-                                className={
-                                    product.stock === 0
-                                        ? "text-red-500 font-medium"
-                                        : product.stock <= 10
-                                            ? "text-yellow-500 font-medium"
-                                            : "text-green-600 font-medium"
-                                }
-                            >
+                            <span className={product.stock === 0 ? "text-red-500 font-medium" : product.stock <= 10 ? "text-yellow-500 font-medium" : "text-green-600 font-medium"}>
                                 {product.stock}
                             </span>
 
@@ -71,12 +59,10 @@ const ProductsTable = ({ products, role }) => {
                                 )}
                             </span>
 
-                            {/* Action Button (only for seller) */}
-                            {path.startsWith("/seller") && (
-                                <div className="text-center cursor-pointer text-gray-600 hover:text-black">
-                                    <ProductsActionButton product={product} />
-                                </div>
-                            )}
+                            <div className="text-center cursor-pointer text-gray-600 hover:text-black">
+                                <ProductsActionButton product={product} />
+                            </div>
+
                         </div>
                     </Link>
                 ))}
@@ -86,10 +72,6 @@ const ProductsTable = ({ products, role }) => {
 };
 
 
-//this componennt used in both seller and admin 
-//that link tag is routing us on a diffrent single product page based on the role which is passed by parent componenent 
-//insted of id we wiil passed slug from the frontened and we will find that product based on slug for better url as of now 
-//we are serching only on the based on the id
 
 
 export default ProductsTable;

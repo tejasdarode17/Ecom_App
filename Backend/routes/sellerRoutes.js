@@ -1,5 +1,5 @@
 import express from "express"
-import { addProduct, assignOrderToDeliveryPartner, changeOrderStatus, deleteProduct, editProduct, fetchAllDeliveryPartners, fetchSellerOrders, getAllSellerProducts, getSellerSingleProduct, settoggleProductStatus } from "../controllers/sellerControllers.js"
+import { addProduct, assignOrderToDeliveryPartner, changeOrderStatus, deleteProduct, editProduct, fetchAllDeliveryPartners, fetchRecetTenOrders, fetchSellerOrders, fetchSellerStats, getAllSellerProducts, getSellerSingleProduct, toggleProductStatus } from "../controllers/sellerControllers.js"
 import { verifyUser } from "../middlewares/auth.js"
 
 const route = express.Router()
@@ -10,11 +10,14 @@ route.get("/seller/products", verifyUser, getAllSellerProducts)
 route.get("/seller/product/:id", verifyUser, getSellerSingleProduct)
 route.post("/seller/edit/product/:id", verifyUser, editProduct)
 route.post("/seller/delete/product/:id", verifyUser, deleteProduct)
-route.post("/seller/active/product/:id", verifyUser, settoggleProductStatus)
+route.post("/seller/active/product/:id", verifyUser, toggleProductStatus)
 
 route.get("/seller/all-orders", verifyUser, fetchSellerOrders)
+route.get("/seller/recent-orders", verifyUser, fetchRecetTenOrders)
+route.get("/seller/stats", verifyUser, fetchSellerStats)
 route.post("/seller/order/status", verifyUser, changeOrderStatus)
 
 route.get("/delivery/all", verifyUser, fetchAllDeliveryPartners)
 route.post("/seller/assign/order", verifyUser, assignOrderToDeliveryPartner)
+
 export default route

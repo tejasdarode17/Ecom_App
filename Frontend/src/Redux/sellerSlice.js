@@ -1,13 +1,19 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 
-export const fetchAllSellerProducts = createAsyncThunk("seller/products", async (_, { rejectWithValue }) => {
+
+export const fetchAllSellerProducts = createAsyncThunk("seller/products", async ({ category, page, status, search }, { rejectWithValue }) => {
     try {
         const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/seller/products`,
-            { withCredentials: true }
+
+            {
+                params: { category, page, status, search },
+                withCredentials: true
+            }
         );
         console.log(response.data);
-        return response.data.products;
+
+        return response.data
     } catch (error) {
         return rejectWithValue(
             error.response?.data?.message || "Something went wrong on server"
@@ -15,56 +21,119 @@ export const fetchAllSellerProducts = createAsyncThunk("seller/products", async 
     }
 });
 
-export const changeOrderStatus = createAsyncThunk("seller/order-status", async ({ orderID, itemID, newStatus }, { rejectWithValue }) => {
+export const fetchAllSellerOrders = createAsyncThunk("seller/orders", async ({ range, page }, { rejectWithValue }) => {
     try {
-        const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/seller/order/status`,
-            { orderID, itemID, newStatus },
-            { withCredentials: true }
+        const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/seller/all-orders`,
+            {
+                params: { range, page },
+                withCredentials: true
+            }
         );
-        console.log(response.data);
-        return response.data.order
+        return {
+            orders: response.data.orders,
+            page: response.data.page,
+            totalOrders: response.data.totalOrders,
+            totalPages: response.data.totalPages,
+        }
     } catch (error) {
         return rejectWithValue(
             error.response?.data?.message || "Something went wrong on server"
         );
     }
-})
+});
+
+export const fetchRecentSellerOrders = createAsyncThunk("seller/recent-orders", async (_, { rejectWithValue }) => {
+    try {
+        const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/seller/recent-orders`,
+            {
+                withCredentials: true
+            }
+        );
+        return response.data.orders
+    } catch (error) {
+        return rejectWithValue(
+            error.response?.data?.message || "Something went wrong on server"
+        );
+    }
+});
+
+export const fetchSellerStats = createAsyncThunk("seller/stats", async (_, { rejectWithValue }) => {
+    try {
+        const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/seller/stats`,
+            {
+                withCredentials: true
+            }
+        );
+        return {
+            totalRevenue: response.data.totalRevenue,
+            todayRevenue: response.data.todayRevenue,
+            monthlyRevenue: response.data.monthRevenue
+        }
+    } catch (error) {
+        return rejectWithValue(
+            error.response?.data?.message || "Something went wrong on server"
+        );
+    }
+});
 
 
 const sellerSlice = createSlice({
     name: "seller",
     initialState: {
-        loading: false,
-        products: [],
+        products: {
+            allProducts: [],
+            totalProducts: 0,
+            filteredTotal: 0,
+            page: 1,
+            pages: 1,
+            productsLoading: false,
+        },
         product: {},
-        orders: [],
-        order: {}
+        orders: {
+            allOrders: [],
+            recentOrdersLoading: "false",
+            recentOrders: [],
+            page: "",
+            totalPages: "",
+            totalOrders: "",
+            ordersLoading: false
+        },
+        revenue: {
+            statsLoading: false,
+            totalRevenue: "",
+            monthlyRevenue: "",
+            todayRevenue: ""
+        },
+        orderDetails: {
+            order: {},
+            orderLoading: false,
+        },
     },
     reducers: {
         clearAllProducts(state) {
-            state.products = []
+            state.products = {}
         },
 
         addProduct(state, action) {
-            state.products.push(action.payload);
+            state.products.allProducts.push(action.payload);
         },
 
         deleteProduct(state, action) {
             const productID = action.payload
-            state.products = state.products.filter((p) => p._id !== productID);
+            state.products.allProducts = state.products.allProducts.filter((p) => p._id !== productID);
         },
 
         updateProduct(state, action) {
             const { id, product } = action.payload;
-            const index = state.products.findIndex((p) => p._id === id);
+            const index = state.products.allProducts.findIndex((p) => p._id === id);
             if (index !== -1) {
-                state.products[index] = product;
+                state.products.allProducts[index] = product;
             }
         },
 
         updateProductStatus(state, action) {
             const { id, active } = action.payload;
-            const product = state.products.find((p) => p._id === id);
+            const product = state.products.allProducts.find((p) => p._id === id);
             if (product) {
                 product.active = active;
             }
@@ -74,44 +143,84 @@ const sellerSlice = createSlice({
             state.product = action.payload
         },
 
-        setSellerOrders(state, action) {
-            state.orders = action.payload
+        setSellerSingleOrder(state, action) {
+            state.orderDetails.order = action.payload
         },
 
-        setSellerSingleOrder(state, action) {
-            state.order = action.payload
+        updateOrderPacked(state, action) {
+            const { itemID, newStatus } = action.payload
+            const item = state.orderDetails.order.items.find((i) => i._id === itemID)
+            if (item) {
+                item.status = newStatus
+            }
         },
 
         setOrderDeliveryPartner(state, action) {
-            state.order = action.payload
+            const { itemID, partnerID } = action.payload
+            const item = state.orderDetails.order.items.find((i) => i._id === itemID)
+            if (item) {
+                item.deliveryPartner = partnerID
+            }
         }
-
     },
     extraReducers: (builder) => {
         builder
             .addCase(fetchAllSellerProducts.pending, (state) => {
-                state.loading = true;
+                state.products.productsLoading = true;
             })
             .addCase(fetchAllSellerProducts.fulfilled, (state, action) => {
-                state.loading = false;
-                state.products = action.payload;
+                const { products, totalProducts, filteredTotal, page, pages } = action.payload;
+                state.products.productsLoading = false;
+                state.products.allProducts = products
+                state.products.filteredTotal = filteredTotal
+                state.products.page = page
+                state.products.pages = pages
+                state.products.totalProducts = totalProducts
             })
             .addCase(fetchAllSellerProducts.rejected, (state) => {
-                state.loading = false;
+                state.productsLoading = false;
             });
         builder
-            .addCase(changeOrderStatus.pending, (state) => {
-                state.loading = true
+            .addCase(fetchAllSellerOrders.pending, (state) => {
+                state.orders.ordersLoading = true;
             })
-            .addCase(changeOrderStatus.fulfilled, (state, action) => {
-                state.order = action.payload
-                state.loading = false
+            .addCase(fetchAllSellerOrders.fulfilled, (state, action) => {
+                state.orders.ordersLoading = false;
+                state.orders.allOrders = action.payload.orders;
+                state.orders.page = action.payload.page;
+                state.orders.totalOrders = action.payload.totalOrders;
+                state.orders.totalPages = action.payload.totalPages;
             })
-            .addCase(changeOrderStatus.rejected, (state) => {
-                state.loading = false;
+            .addCase(fetchAllSellerOrders.rejected, (state) => {
+                state.orders.ordersLoading = false;
+            });
+
+        builder
+            .addCase(fetchRecentSellerOrders.pending, (state) => {
+                state.orders.recentOrdersLoading = true;
+            })
+            .addCase(fetchRecentSellerOrders.fulfilled, (state, action) => {
+                state.orders.recentOrdersLoading = false;
+                state.orders.recentOrders = action.payload
+            })
+            .addCase(fetchRecentSellerOrders.rejected, (state) => {
+                state.orders.recentOrders = false;
+            });
+        builder
+            .addCase(fetchSellerStats.pending, (state) => {
+                state.revenue.statsLoading = true;
+            })
+            .addCase(fetchSellerStats.fulfilled, (state, action) => {
+                state.revenue.statsLoading = false;
+                state.revenue.totalRevenue = action.payload.totalRevenue
+                state.revenue.todayRevenue = action.payload.todayRevenue
+                state.revenue.monthlyRevenue = action.payload.monthlyRevenue
+            })
+            .addCase(fetchSellerStats.rejected, (state) => {
+                state.orders.recentOrders = false;
             });
     },
 });
 
-export const { clearAllProducts, updateProductStatus, addProduct, deleteProduct, updateProduct, setSellerSingleProduct, setSellerOrders, setSellerSingleOrder, setOrderDeliveryPartner } = sellerSlice.actions
+export const { clearAllProducts, updateProductStatus, addProduct, deleteProduct, updateProduct, setSellerSingleProduct, setSellerSingleOrder, updateOrderPacked, setOrderDeliveryPartner } = sellerSlice.actions
 export default sellerSlice.reducer;

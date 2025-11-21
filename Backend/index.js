@@ -9,6 +9,7 @@ import imageRouter from "./routes/imageRoutes.js"
 import adminRouter from "./routes/adminRoutes.js"
 import userRouter from "./routes/userRoutes.js"
 import paymentRouter from "./routes/paymentRoutes.js"
+import deliveryRouter from "./routes/deliveryPartnerRoute.js"
 import cloudinaryConfig from "./config/cloudinary.js";
 
 dotenv.config();
@@ -19,7 +20,7 @@ cloudinaryConfig()
 
 app.use(
     cors({
-        origin: process.env.CLIENT_URL || "http://localhost:3000",
+        origin: process.env.CLIENT_URL,
         methods: ['GET', 'POST', 'PUT', 'DELETE'],
         allowedHeaders: [
             "Content-Type",
@@ -32,6 +33,8 @@ app.use(
     })
 );
 
+
+
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -43,6 +46,7 @@ app.use("/api/v1", sellerRouter)
 app.use("/api/v1", adminRouter)
 app.use("/api/v1", userRouter)
 app.use("/api/v1", paymentRouter)
+app.use("/api/v1", deliveryRouter)
 
 
 app.listen(PORT, () => {

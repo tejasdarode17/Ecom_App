@@ -1,8 +1,19 @@
 import DeliveryPartnerSidebar from '@/Main Components/DeliveryPartner/DeliverySidebar'
-import React from 'react'
+import { fetchAllDeliveryOrders, fetchOngoingDeliveryOrders } from '@/Redux/deliverySlice'
+import { useEffect } from 'react'
+import { useDispatch } from 'react-redux'
 import { Outlet } from 'react-router-dom'
 
 const DeliveryLayout = () => {
+
+    const dispatch = useDispatch()
+
+    useEffect(() => {
+        dispatch(fetchOngoingDeliveryOrders())
+        dispatch(fetchAllDeliveryOrders())
+    }, [])
+
+
     return (
         <div className="flex min-h-screen w-full">
             <div className="">

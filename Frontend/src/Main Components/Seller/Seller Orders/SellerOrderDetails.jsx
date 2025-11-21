@@ -1,21 +1,21 @@
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { Download, Printer, StepBack, Check, Truck, PackageCheck, ArrowRightCircle, MapPin, CreditCard, Package } from "lucide-react";
+import { Download, Printer, StepBack, Check, Truck, PackageCheck, ArrowRightCircle, MapPin, CreditCard, Package, Box, CheckCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { changeOrderStatus, setOrderDeliveryPartner } from "@/Redux/sellerSlice";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { setOrderDeliveryPartner, updateOrderPacked } from "@/Redux/sellerSlice";
 import { Dialog, DialogContent, DialogHeader, DialogTrigger } from "@/components/ui/dialog";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { DialogDescription, DialogTitle } from "@radix-ui/react-dialog";
-import { toast } from "sonner";
+import { DialogTitle } from "@radix-ui/react-dialog";
 
 
 
 const SellerOrderDetails = () => {
     const navigate = useNavigate();
-    const { order } = useSelector((store) => store.seller || {});
+    const { orderDetails } = useSelector((store) => store.seller || {});
+
+    const { order } = orderDetails
 
     if (!order) {
         return (
@@ -185,108 +185,87 @@ const OrderItemsWithStatus = ({ order }) => {
 
 
 const OrderItemCard = ({ item, order }) => {
+    const [open, setOpen] = useState(false);
+    const dispatch = useDispatch();
+    const { orderLoading } = useSelector((store) => store.seller)
 
     const statusConfig = {
-        ordered: {
-            label: "Order Confirmed",
-            color: "bg-slate-100 text-slate-700 border-slate-300",
-            nextAction: "packed",
-            nextLabel: "Mark as Packed",
-            icon: PackageCheck,
-            buttonCss: "bg-blue-600 hover:bg-blue-700"
-        },
-        packed: {
-            label: "Packed",
-            color: "bg-blue-100 text-blue-700 border-blue-300",
-            nextAction: null,
-            nextLabel: null,
-            icon: Truck,
-            buttonCss: "bg-indigo-600 hover:bg-indigo-700"
-        },
+        ordered: { label: "Order Confirmed", color: "bg-slate-100 text-slate-700", icon: PackageCheck },
+        packed: { label: "Packed", color: "bg-blue-100 text-blue-700", icon: Truck },
+        shipped: { label: "Shipped", color: "bg-yellow-100 text-yellow-700", icon: Box },
+        "out-for-delivery": { label: "Out for Delivery", color: "bg-orange-100 text-orange-700", icon: Truck },
+        delivered: { label: "Delivered", color: "bg-green-100 text-green-700", icon: CheckCircle },
     };
 
-  
     const cfg = statusConfig[item.status] || statusConfig.ordered;
     const Icon = cfg.icon;
 
-    const dispatch = useDispatch()
-    function handelProductStatusChange(orderID, itemID, newStatus) {
-        dispatch(changeOrderStatus({ orderID, itemID, newStatus }))
+
+    async function handleMarkPacked() {
+        try {
+            const orderID = order._id
+            const itemID = item._id
+            const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/seller/order/status`,
+                { orderID, itemID, newStatus: "packed" },
+                { withCredentials: true }
+            );
+            console.log(response.data);
+            if (response.data.success) dispatch(updateOrderPacked({ itemID, newStatus: "packed" }))
+        } catch (error) {
+            console.log(error);
+
+        }
     }
 
-
     return (
-        <div className="p-4 border border-slate-200 rounded-xl bg-white hover:shadow-md transition-all duration-200">
+        <div className="p-4 border rounded-xl bg-white hover:shadow-md transition-all">
             <div className="flex gap-4">
                 <img
-                    src={item?.product?.images?.[0]?.url || item?.product?.thumbnail || "/placeholder.png"}
+                    src={item?.product?.images?.[0]?.url || "/placeholder.png"}
                     alt={item?.product?.name || "product"}
-                    className="w-20 h-20 rounded-xl object-cover border border-slate-200 flex-shrink-0"
+                    className="w-20 h-20 rounded-xl object-cover border"
                 />
-
-                <div className="flex-1 min-w-0">
-                    <div className="flex justify-between items-start mb-3">
-                        <div className="flex-1">
-                            <h3 className="font-semibold text-slate-800 text-lg mb-1 line-clamp-2">{item?.product?.name}</h3>
-                            <div className="flex items-center gap-4 text-sm text-slate-600">
-                                <span>Qty: {item?.quantity}</span>
-                                <span>•</span>
-                                <span>₹{item?.lockedPrice?.toLocaleString("en-IN")} each</span>
-                            </div>
+                <div className="flex-1 flex flex-col justify-between">
+                    <div className="flex justify-between mb-2">
+                        <div>
+                            <h3 className="font-semibold">{item?.product?.name}</h3>
+                            <p className="text-sm text-slate-600">
+                                Qty: {item?.quantity} • ₹{item?.lockedPrice?.toLocaleString("en-IN")} each
+                            </p>
                         </div>
-
-                        <div className="text-right ml-4">
-                            <p className="text-lg font-bold text-slate-800">₹{item?.sellerAmount}</p>
-                        </div>
+                        <p className="font-bold">₹{item?.sellerAmount}</p>
                     </div>
 
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <Badge className={`${cfg.color} border font-medium capitalize flex items-center gap-2`}>
-                                <Icon size={14} />
-                                {cfg.label}
-                            </Badge>
-                        </div>
+                    <div className="flex justify-between items-center">
+                        <Badge className={`${cfg.color} border font-medium capitalize flex items-center gap-2`}>
+                            <Icon size={14} />
+                            {cfg.label}
+                        </Badge>
 
-                        {cfg.nextAction ? (
-                            <AlertDialog>
-                                <AlertDialogTrigger asChild>
-                                    <Button className={`${cfg.buttonCss} text-white shadow-sm`}>
-                                        <Icon size={16} className="mr-2" />
-                                        {cfg?.nextLabel}
-                                    </Button>
-                                </AlertDialogTrigger>
-                                <AlertDialogContent>
-                                    <AlertDialogHeader>
-                                        <AlertDialogTitle>Change Status</AlertDialogTitle>
-                                        <AlertDialogDescription>
-                                            This action cannot be undone. The product will be {cfg.nextAction}
-                                        </AlertDialogDescription>
-                                    </AlertDialogHeader>
-                                    <AlertDialogFooter>
-                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                        <AlertDialogAction onClick={() => handelProductStatusChange(order._id, item._id, cfg.nextAction)} className={`${cfg.buttonCss} text-white shadow-sm`}>
-                                            {cfg.nextLabel}
-                                        </AlertDialogAction>
-                                    </AlertDialogFooter>
-                                </AlertDialogContent>
-                            </AlertDialog>
-                        ) : (
-                            <Dialog>
+                        {/* Show "Mark as Packed" button only if item is ordered */}
+                        {item.status === "ordered" && (
+                            <Button
+                                className="bg-blue-600 hover:bg-blue-700 text-white"
+                                onClick={handleMarkPacked}
+                                disabled={orderLoading}
+                            >
+                                {orderLoading ? <Loader2 className="animate-spin"></Loader2> : "Mark as Packed"}
+                            </Button>
+                        )}
+
+                        {/* Show Assign Delivery Partner button only if packed and not assigned */}
+                        {item.status === "packed" && !item.deliveryPartner && (
+                            <Dialog open={open} onOpenChange={setOpen}>
                                 <DialogTrigger asChild>
-                                    <Button variant="none" className="bg-green-600 hover:bg-green-700 text-white shadow-sm">
-                                        Assign A Delivery Partner
+                                    <Button className="bg-green-600 hover:bg-green-700 text-white">
+                                        Assign Delivery Partner
                                     </Button>
                                 </DialogTrigger>
                                 <DialogContent>
                                     <DialogHeader>
-                                        <DialogTitle>
-                                            <DialogDescription>
-                                                <p>Select A delivery Partner</p>
-                                            </DialogDescription>
-                                        </DialogTitle>
+                                        <DialogTitle>Select a Delivery Partner</DialogTitle>
                                     </DialogHeader>
-                                    <DeliveryPartnerPicker order={order} item={item} />
+                                    <DeliveryPartnerPicker order={order} item={item} onClose={() => setOpen(false)} />
                                 </DialogContent>
                             </Dialog>
                         )}
@@ -298,97 +277,77 @@ const OrderItemCard = ({ item, order }) => {
 };
 
 
-
-const DeliveryPartnerPicker = ({ order, item }) => {
+const DeliveryPartnerPicker = ({ order, item, onClose }) => {
     const [partners, setPartners] = useState([]);
-    const [loading, setLoading] = useState(false);
     const [selectedPartner, setSelectedPartner] = useState(null);
-    const dispatch = useDispatch()
-
-
-    async function fetchDeliveryPartners() {
-        try {
-            setLoading(true)
-            const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/delivery/all`, {
-                withCredentials: true
-            })
-            setPartners(response?.data?.partners || []);
-        } catch (err) {
-            console.error(err);
-        } finally {
-            setLoading(false);
-        }
-    }
+    const [loading, setLoading] = useState(false);
+    const dispatch = useDispatch();
 
     useEffect(() => {
-        fetchDeliveryPartners();
+        async function fetchPartners() {
+            setLoading(true);
+            try {
+                const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/delivery/all`, { withCredentials: true });
+                setPartners(response.data.partners || []);
+            } catch (err) {
+                console.error(err);
+            } finally {
+                setLoading(false);
+            }
+        }
+        fetchPartners();
     }, []);
 
-
-
     async function handleAssign() {
-
-        if (!selectedPartner) {
-            return toast.error("Please Select a Delivery Partner")
-        }
+        if (!selectedPartner) return;
+        setLoading(true);
         try {
-            setLoading(true)
             const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/seller/assign/order`,
-                {
-                    orderID: order._id,
-                    itemID: item._id,
-                    partnerID: selectedPartner
-                },
+                { orderID: order._id, itemID: item._id, partnerID: selectedPartner },
                 { withCredentials: true }
-            )
-            console.log(response.data);
-            dispatch(setOrderDeliveryPartner(response.data.order))
+            );
+            if (response.data.success) dispatch(setOrderDeliveryPartner({ itemID: item._id, partnerID: selectedPartner }));
+            onClose();
         } catch (err) {
             console.error(err);
-            toast.error(err?.response?.data?.message || "Something Went Wrong on Server")
         } finally {
             setLoading(false);
         }
+    };
 
-    }
 
-    if (loading) return <p>Loading delivery partners...</p>;
+    if (loading) return <p>Loading...</p>;
 
     return (
-        <div className="space-y-3">
+        <div className="space-y-2">
             {partners.map((p) => (
                 <div
                     key={p._id}
-                    className={`border p-3 rounded-lg cursor-pointer flex justify-between items-center ${selectedPartner === p._id ? "border-blue-600 bg-blue-50" : "border-slate-300"}`}
+                    className={`border p-2 rounded-lg flex justify-between items-center cursor-pointer ${selectedPartner === p._id ? "border-blue-600 bg-blue-50" : "border-slate-300"}`}
                     onClick={() => setSelectedPartner(p._id)}
                 >
                     <div>
                         <p className="font-semibold">{p.username}</p>
-                        <p className="text-slate-600 text-sm">📞 {p.phone}</p>
-                        <p className="text-slate-600 text-sm">⭐ {p.rating || 4.5}</p>
+                        <p className="text-sm text-slate-600">📞 {p.phone}</p>
                     </div>
-
-                    {selectedPartner === p._id && (
-                        <span className="text-blue-600 font-bold">Selected</span>
-                    )}
+                    {selectedPartner === p._id && <span className="text-blue-600 font-bold">Selected</span>}
                 </div>
             ))}
 
             <Button
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white mt-4"
-                disabled={selectedPartner === null}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                disabled={!selectedPartner}
                 onClick={handleAssign}
             >
-                Assign Delivery Partner
+                Assign
             </Button>
         </div>
     );
 };
 
 
-
-
-
-
 export default SellerOrderDetails;
+
+
+
 

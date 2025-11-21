@@ -303,6 +303,7 @@ export async function deleteProduct(req, res) {
 export async function getAllSellerProducts(req, res) {
     try {
         const sellerId = req.user.id;
+        let { category = "all", status = "all", search = "", page = 1 } = req.query;
 
         if (req.user.role !== "seller") {
             return res.status(403).json({
@@ -311,14 +312,39 @@ export async function getAllSellerProducts(req, res) {
             });
         }
 
-        const products = await Product.find({ seller: sellerId })
+        page = Number(page);
+        const limit = 10
+
+        const filterQuery = { seller: sellerId };
+
+        if (status && status !== "all") {
+            filterQuery.active = status === "active";
+        }
+
+        if (category && category !== "all") {
+            filterQuery.category = category;
+        }
+
+        if (search.trim() !== "") {
+            filterQuery.name = { $regex: search, $options: "i" };
+        }
+
+        const filteredTotal = await Product.countDocuments(filterQuery);
+        const totalProducts = await Product.countDocuments({ seller: sellerId });
+        const products = await Product.find(filterQuery)
             .populate("category", "name _id")
-            .sort({ createdAt: -1 });
+            .sort({ createdAt: -1 })
+            .skip((page - 1) * limit)
+            .limit(limit);
 
         return res.status(200).json({
             success: true,
             message: "Products fetched successfully",
-            products
+            products,
+            totalProducts,
+            filteredTotal,
+            page,
+            pages: Math.ceil(filteredTotal / limit),
         });
 
     } catch (error) {
@@ -376,7 +402,7 @@ export async function getSellerSingleProduct(req, res) {
     }
 }
 
-export async function settoggleProductStatus(req, res) {
+export async function toggleProductStatus(req, res) {
     try {
         const sellerID = req.user.id;
         const { id } = req.params;
@@ -418,7 +444,7 @@ export async function settoggleProductStatus(req, res) {
         return res.status(200).json({
             success: true,
             message: "Product status updated",
-            product
+            status: product.active
         });
 
     } catch (error) {
@@ -432,48 +458,188 @@ export async function settoggleProductStatus(req, res) {
 }
 
 
-// --------------------------------------------------------------------------------------------
-//this is helper i created for finding seller actual products and sending consistent data.
-//in all the api who is updating any order 
-//so that we dont have to do lot of of stuff in redux we can simply change this order with the old in redux 
-export function formatSellerOrder(order, sellerID) {
-    if (!order) return null;
 
-    const sellerItems = order.items.filter(
-        (item) => item.seller.toString() === sellerID.toString()
-    );
-    const sellerTotalAmount = sellerItems.reduce((acc, curr) => acc + curr.sellerAmount, 0);
-
-    return {
-        _id: order._id,
-        customer: order.customer,
-        items: sellerItems,
-        sellerTotalAmount,
-        paymentMode: order.paymentMode,
-        paymentStatus: order.paymentStatus,
-        address: order.address,
-        createdAt: order.createdAt,
-        updatedAt: order.updatedAt,
-    };
-}
-
+// --------Orders Apis----------------------------------
 export async function fetchSellerOrders(req, res) {
     try {
         const sellerID = req.user.id;
+        const { page = 1, range = "all" } = req.query;
 
-        const orders = await Order.find({ "items.seller": sellerID })
+        if (!sellerID) {
+            return res.status(403).json({
+                success: false,
+                message: "You are not authorized"
+            });
+        }
+
+
+        const limit = 10;
+        const skip = (page - 1) * limit;
+
+        let dateFilter = {};
+        if (range === "today") {
+            const start = new Date();
+            start.setHours(0, 0, 0, 0);
+
+            const end = new Date();
+            end.setHours(23, 59, 59, 999);
+
+            dateFilter = { createdAt: { $gte: start, $lte: end } };
+        }
+
+        if (range === "thisMonth") {
+            const now = new Date();
+            const start = new Date(now.getFullYear(), now.getMonth(), 1);
+            const end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+
+            dateFilter = { createdAt: { $gte: start, $lte: end } };
+        }
+
+        const query = { "items.seller": sellerID, ...dateFilter };
+        const totalOrders = await Order.countDocuments(query);
+
+        const orders = await Order.find(query)
             .populate("customer", "username email addresses")
             .populate("items.product", "name price images")
-            .sort({ createdAt: -1 });
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit);
 
-        const formattedOrders = orders.map(order =>
-            formatSellerOrder(order, sellerID)
-        );
+
+        const formattedOrders = orders.map(order => {
+            const sellerItems = order.items.filter((it) => it.seller.toString() === sellerID.toString());
+            const sellerTotalAmount = sellerItems.reduce((sum, it) => sum + it.sellerAmount, 0);
+            return {
+                _id: order._id,
+                customer: order.customer,
+                items: sellerItems,
+                sellerTotalAmount,
+                paymentMode: order.paymentMode,
+                paymentStatus: order.paymentStatus,
+                address: order.address,
+                createdAt: order.createdAt,
+                updatedAt: order.updatedAt,
+            };
+        });
 
         return res.status(200).json({
             success: true,
-            message: "Orders fetched",
-            orders: formattedOrders
+            orders: formattedOrders,
+            page: Number(page),
+            totalOrders,
+            totalPages: Math.ceil(totalOrders / limit),
+        });
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            success: false,
+            message: "Server error",
+            error: error.message,
+        });
+    }
+}
+
+export async function fetchRecetTenOrders(req, res) {
+    try {
+        const sellerID = req.user.id;
+
+        if (!sellerID) {
+            return res.status(403).json({
+                success: false,
+                message: "You are not authorized",
+            });
+        }
+
+        const orders = await Order.find({ "items.seller": sellerID })
+            .sort({ createdAt: -1 })
+            .limit(5);
+
+        const sellerActualOrders = orders.map((order) => {
+            const sellerItems = order.items.filter((it) => it.seller.toString() === sellerID.toString());
+            const sellerTotalAmount = sellerItems.reduce((sum, it) => sum + it.sellerAmount, 0);
+            return {
+                _id: order._id,
+                customer: order.customer,
+                items: sellerItems,
+                sellerTotalAmount,
+                paymentMode: order.paymentMode,
+                paymentStatus: order.paymentStatus,
+                address: order.address,
+                createdAt: order.createdAt,
+                updatedAt: order.updatedAt,
+            };
+        });
+
+        return res.status(200).json({
+            success: true,
+            message: "Fetched Recent Orders",
+            orders: sellerActualOrders,
+        });
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            success: false,
+            message: "Server error",
+            error: error.message,
+        });
+    }
+}
+
+export async function fetchSellerStats(req, res) {
+    try {
+        const sellerID = req.user.id;
+
+        if (!sellerID) {
+            return res.status(403).json({
+                success: false,
+                message: "You are not authorized"
+            });
+        }
+
+        const orders = await Order.find({ "items.seller": sellerID })
+            .populate("items.product", "name price")
+            .sort({ createdAt: -1 });
+
+        let totalRevenue = 0;
+        let todayRevenue = 0;
+        let monthRevenue = 0;
+
+        const todayStart = new Date();
+        todayStart.setHours(0, 0, 0, 0);
+
+        const todayEnd = new Date();
+        todayEnd.setHours(23, 59, 59, 999);
+
+        const now = new Date();
+        const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+        const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+
+        orders.forEach(order => {
+            const sellerItems = order.items.filter(
+                (it) => it.seller.toString() === sellerID.toString()
+            );
+
+            const sellerTotal = sellerItems.reduce((sum, it) => sum + it.sellerAmount, 0);
+
+            totalRevenue += sellerTotal;
+
+            if (order.createdAt >= todayStart && order.createdAt <= todayEnd) {
+                todayRevenue += sellerTotal;
+            }
+
+            if (order.createdAt >= monthStart && order.createdAt <= monthEnd) {
+                monthRevenue += sellerTotal;
+            }
+        });
+
+        return res.status(200).json({
+            success: true,
+            totalRevenue,
+            todayRevenue,
+            monthRevenue,
+            totalOrders: orders.length
         });
 
     } catch (error) {
@@ -513,7 +679,6 @@ export async function changeOrderStatus(req, res) {
 
         return res.status(200).json({
             success: true,
-            order: formatSellerOrder(order, sellerID)
         });
 
     } catch (error) {
@@ -550,6 +715,13 @@ export async function assignOrderToDeliveryPartner(req, res) {
             return res.status(403).json({ success: false, message: "Unauthorized seller" });
         }
 
+        if (item.deliveryPartner) {
+            return res.status(403).json({
+                success: false,
+                message: "This product is already assigned to a delivery partner"
+            });
+        }
+
         // Assign delivery partner
         item.deliveryPartner = partnerID;
         item.deliveryStatus = "assigned";
@@ -565,7 +737,6 @@ export async function assignOrderToDeliveryPartner(req, res) {
         return res.status(200).json({
             success: true,
             message: "Delivery Partner Assigned",
-            order: formatSellerOrder(order, sellerID)
         });
 
     } catch (error) {
@@ -574,15 +745,10 @@ export async function assignOrderToDeliveryPartner(req, res) {
     }
 }
 
-// above apis is using that formatSellerOrder
-// --------------------------------------------------------------------------
-
-
 export async function fetchAllDeliveryPartners(req, res) {
 
     try {
         const sellerId = req.user.id
-        console.log(sellerId);
 
         if (!sellerId) {
             return res.status(403).json({
@@ -592,7 +758,6 @@ export async function fetchAllDeliveryPartners(req, res) {
         }
 
         const deliveyPartners = await DeliveryPartner.find()
-        console.log(deliveyPartners);
 
         if (!deliveyPartners) {
             return res.status(403).json({
@@ -616,6 +781,11 @@ export async function fetchAllDeliveryPartners(req, res) {
         });
     }
 }
+
+// --------------------------------------------------------------------------
+
+
+
 
 
 

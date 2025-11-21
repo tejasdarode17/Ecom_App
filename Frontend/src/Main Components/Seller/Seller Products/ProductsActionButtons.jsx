@@ -14,7 +14,6 @@ const ProductsActionButton = ({ product }) => {
     const [isActive, setIsActive] = useState(product.active)
     const dispatch = useDispatch()
 
-
     async function toggleProductStatus(id, newStatus) {
         setIsActive(newStatus);
         try {
@@ -22,8 +21,8 @@ const ProductsActionButton = ({ product }) => {
                 withCredentials: true,
             });
             const data = response.data
-            //new status can be sent from backend 
-            dispatch(updateProductStatus({ id, active: newStatus }));
+            console.log(data);
+            dispatch(updateProductStatus({ id, active: data.status }));
         } catch (err) {
             setIsActive(!newStatus)
             toast.error("Failed to update product status");
@@ -39,7 +38,6 @@ const ProductsActionButton = ({ product }) => {
             const data = response.data
             console.log(data);
             dispatch(deleteProduct(id))
-
         } catch (err) {
             toast.error("Failed to Delete Product");
             console.error(err);

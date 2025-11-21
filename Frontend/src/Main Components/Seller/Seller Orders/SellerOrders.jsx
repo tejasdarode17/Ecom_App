@@ -1,71 +1,43 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import axios from "axios";
 import { formatDate } from "@/utils/formatDate";
 import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
-import { setSellerOrders, setSellerSingleOrder } from "@/Redux/sellerSlice";
+import { fetchAllSellerOrders, setSellerSingleOrder } from "@/Redux/sellerSlice";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
 
 export default function SellerOrders() {
-    const dispatch = useDispatch();
     const { orders } = useSelector((store) => store.seller);
-    const navigate = useNavigate();
-    const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
+    const [selectRange, setSelectRange] = useState("all")
+    const [page, setPage] = useState(1);
 
-
-    async function fetchAllOrders() {
-        try {
-            setLoading(true);
-            const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/seller/all-orders`,
-                { withCredentials: true }
-            );
-            dispatch(setSellerOrders(res.data.orders));
-        } catch (err) {
-            console.log(err);
-        } finally {
-            setLoading(false);
-        }
-    }
-
-    useEffect(() => {
-        fetchAllOrders();
-    }, []);
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
 
     function orderDetails(order) {
         dispatch(setSellerSingleOrder(order));
         navigate(`/seller/order/${order?._id}`);
     }
 
-    // Filter orders based on search term
-    const filteredOrders = orders.filter(order =>
+    useEffect(() => {
+        dispatch(fetchAllSellerOrders({ range: selectRange, page }));
+    }, [selectRange, page]);
+
+    const filteredOrders = orders?.allOrders?.filter(order =>
         order._id.toLowerCase().includes(searchTerm.toLowerCase()) ||
         order.customer?.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        order.address?.city?.toLowerCase().includes(searchTerm.toLowerCase())
+        order.address?.name?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    if (loading) {
-        return (
-            <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50/30 p-6">
-                <div className="max-w-6xl mx-auto">
-                    <div className="animate-pulse space-y-4">
-                        {[...Array(3)].map((_, i) => (
-                            <div key={i} className="bg-white rounded-xl p-6 shadow-sm border border-slate-200">
-                                <div className="flex justify-between">
-                                    <div className="space-y-3">
-                                        <div className="h-6 bg-slate-200 rounded w-48"></div>
-                                        <div className="h-4 bg-slate-200 rounded w-32"></div>
-                                        <div className="h-4 bg-slate-200 rounded w-24"></div>
-                                    </div>
-                                    <div className="h-12 bg-slate-200 rounded-2xl w-32"></div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </div>
-        );
+
+    function checkDeliveryStatusPerItem(order) {
+        return order.items.every((i) => i.status === "delivered")
     }
+
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50/30 p-6">
@@ -81,7 +53,7 @@ export default function SellerOrders() {
 
                 {/* Search and Filters */}
                 <div className="mb-6">
-                    <div className="relative max-w-md">
+                    <div className="relative flex-1 max-w-md">
                         <input
                             type="text"
                             placeholder="Search orders by ID, customer, or city..."
@@ -96,6 +68,44 @@ export default function SellerOrders() {
                         </div>
                     </div>
                 </div>
+
+                <div className="my-5">
+                    <Select value={selectRange} onValueChange={(value) => setSelectRange(value)}>
+                        <SelectTrigger className="w-[180px]">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectGroup>
+                                <SelectItem value="all">All</SelectItem>
+                                <SelectItem value="today">Today</SelectItem>
+                                <SelectItem value="thisMonth">This Month</SelectItem>
+                            </SelectGroup>
+                        </SelectContent>
+                    </Select>
+                </div>
+
+
+
+                {orders?.orderLoading && (
+                    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50/30 p-6">
+                        <div className="max-w-6xl mx-auto">
+                            <div className="animate-pulse space-y-4">
+                                {[...Array(3)].map((_, i) => (
+                                    <div key={i} className="bg-white rounded-xl p-6 shadow-sm border border-slate-200">
+                                        <div className="flex justify-between">
+                                            <div className="space-y-3">
+                                                <div className="h-6 bg-slate-200 rounded w-48"></div>
+                                                <div className="h-4 bg-slate-200 rounded w-32"></div>
+                                                <div className="h-4 bg-slate-200 rounded w-24"></div>
+                                            </div>
+                                            <div className="h-12 bg-slate-200 rounded-2xl w-32"></div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 {/* Orders List */}
                 {filteredOrders.length === 0 ? (
@@ -144,15 +154,6 @@ export default function SellerOrders() {
                                                 >
                                                     Payment Status :  {order.paymentStatus}
                                                 </span>
-                                                {/* 
-                                                <span
-                                                    className={`px-3 py-1 text-xs rounded-full font-semibold capitalize border ${order.settlementStatus === "paid"
-                                                        ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                                                        : "bg-amber-50 text-amber-700 border-amber-200"
-                                                        }`}
-                                                >
-                                                    Payout : {order.settlementStatus}
-                                                </span> */}
                                             </div>
                                         </div>
 
@@ -179,20 +180,12 @@ export default function SellerOrders() {
                                             </div>
                                         </div>
 
-                                        {/* Shipping Status */}
-                                        <div className="flex items-center gap-2 pt-2">
-                                            <span className="text-slate-500 text-xs font-medium">STATUS:</span>
-                                            <span
-                                                className={`px-3 py-1.5 text-xs rounded-full font-semibold border ${order.shippingStatus === "shipped"
-                                                    ? "bg-blue-50 text-blue-700 border-blue-200"
-                                                    : order.shippingStatus === "delivered"
-                                                        ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                                                        : "bg-slate-100 text-slate-700 border-slate-200"
-                                                    }`}
-                                            >
-                                                {order.shippingStatus || "Ordered"}
-                                            </span>
-                                        </div>
+                                        {checkDeliveryStatusPerItem(order) &&
+                                            <Badge className="bg-green-400">
+                                                <p className="uppercase">delivered</p>
+                                            </Badge>
+                                        }
+
                                     </div>
 
                                     {/* RIGHT SIDE AMOUNT */}
@@ -217,28 +210,39 @@ export default function SellerOrders() {
                                         >
                                             ₹{order?.sellerTotalAmount?.toLocaleString("en-IN")}
                                         </div>
-                                        {/* 
-                                        {order.settlementStatus === "paid" ? (
-                                            <div className="flex items-center gap-1 mt-3 text-emerald-600">
-                                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                                </svg>
-                                                <span className="text-xs font-semibold">Settled</span>
-                                            </div>
-                                        ) : (
-                                            <div className="flex items-center gap-1 mt-3 text-amber-600">
-                                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
-                                                </svg>
-                                                <span className="text-xs font-semibold">Pending Payout</span>
-                                            </div>
-                                        )} */}
                                     </div>
                                 </div>
                             </Card>
                         ))}
                     </div>
                 )}
+
+
+                <div className="flex justify-center mt-8 gap-3">
+
+                    <Button
+                        className="w-24"
+                        variant="outline"
+                        disabled={page === 1}
+                        onClick={() => setPage(prev => Math.max(prev - 1, 1))}
+                    >
+                        Previous
+                    </Button>
+
+                    <div className="px-5 py-2 rounded-xl bg-white shadow-sm border border-slate-300 font-semibold text-slate-700">
+                        Page {page}
+                    </div>
+
+                    <Button
+                        className="w-24"
+                        variant="outline"
+                        disabled={page === orders.totalPages}
+                        onClick={() => setPage(prev => prev + 1)}
+                    >
+                        Next
+                    </Button>
+                </div>
+
             </div>
         </div>
     );

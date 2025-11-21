@@ -12,11 +12,8 @@ const AdminSellers = () => {
 
     const sellers = sellersByStatus?.[status]?.data || []
 
-    const page = 1
-    const limit = 20
-
     useEffect(() => {
-        dispatch(fetchAllSellers({ status, page, limit }));
+        dispatch(fetchAllSellers({ status, page: 1, limit: 20 }));
     }, [status]);
 
     return (

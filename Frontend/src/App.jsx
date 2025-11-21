@@ -42,7 +42,8 @@ import DeliveryLogin from "./Main Components/DeliveryPartner/Delivery Auth/Deliv
 import DeliveryRegistration from "./Main Components/DeliveryPartner/Delivery Auth/DeliveryRegistration"
 import DeliveryLayout from "./Layouts/DeliveryLayout"
 import DeliveryDashboard from "./Main Components/DeliveryPartner/DeliveryDashboard"
-import DeliveryOrders from "./Main Components/DeliveryPartner/DeliveryOrders"
+import OngoingDeliveryOrders from "./Main Components/DeliveryPartner/OngoingDeliveryOrders"
+import DeliveryAllOrders from "./Main Components/DeliveryPartner/DeliveryAllOrders"
 
 
 const appRouter = createBrowserRouter([
@@ -245,8 +246,12 @@ const appRouter = createBrowserRouter([
         element: <DeliveryDashboard></DeliveryDashboard>
       },
       {
-        path: "orders",
-        element: <DeliveryOrders></DeliveryOrders>
+        path: "ongoing-orders",
+        element: <OngoingDeliveryOrders></OngoingDeliveryOrders>
+      },
+      {
+        path: "all-orders",
+        element: <DeliveryAllOrders></DeliveryAllOrders>
       }
     ]
   },
